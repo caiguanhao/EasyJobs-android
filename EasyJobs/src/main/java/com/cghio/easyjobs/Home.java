@@ -2,17 +2,24 @@ package com.cghio.easyjobs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
+
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -28,7 +35,7 @@ public class Home extends Activity {
     private static String PREF_CONTENT = "CONTENT";
 
     public static int API_VERSION = 0;
-    public static URL API_HELP_URL = null;
+    public static String API_HELP_URL = null;
     public static String API_TOKEN = null;
 
     @Override
@@ -36,11 +43,23 @@ public class Home extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        findViewById(R.id.button_scan_qr_code).setOnClickListener(new View.OnClickListener() {
+        if (readPrefs()) {
+            showJobs();
+        }
+
+        Button scan_or_revoke = (Button) findViewById(R.id.button_scan_or_revoke);
+
+        scan_or_revoke.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (readPrefs()) {
-                    showSimpleErrorDialog(getString(R.string.error_already_authenticated));
+                    SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
+                    SharedPreferences.Editor editor = sharedPrefs.edit();
+                    editor.remove(PREF_VERSION);
+                    editor.remove(PREF_URL);
+                    editor.remove(PREF_CONTENT);
+                    editor.commit();
+                    ((Button) view).setText(R.string.scan_qr_code);
                     return;
                 }
                 try {
@@ -53,20 +72,20 @@ public class Home extends Activity {
                     alertDialog.setMessage(getString(R.string.error_barcode_scanner_not_installed));
                     alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.cancel),
                             new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                        }
-                    });
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                }
+                            });
                     alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok),
                             new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            Intent intent = new Intent(Intent.ACTION_VIEW);
-                            intent.setData(Uri.parse(
-                                    "market://details?id=com.google.zxing.client.android"));
-                            startActivity(intent);
-                        }
-                    });
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                                    intent.setData(Uri.parse(
+                                            "market://details?id=com.google.zxing.client.android"));
+                                    startActivity(intent);
+                                }
+                            });
                     alertDialog.show();
                 }
             }
@@ -126,7 +145,11 @@ public class Home extends Activity {
                 } catch (Exception e) {
                     showSimpleErrorDialog(e.getMessage());
                 }
-                Toast.makeText(Home.this, R.string.successfully_scanned, Toast.LENGTH_SHORT).show();
+                if (readPrefs()) {
+                    Toast.makeText(Home.this, R.string.successfully_scanned, Toast.LENGTH_SHORT)
+                            .show();
+                    showJobs();
+                }
             }
         }
     }
@@ -137,6 +160,32 @@ public class Home extends Activity {
         alertDialog.setTitle(R.string.error);
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), (Message) null);
         alertDialog.show();
+    }
+
+    private void showJobs() {
+        try {
+            RequestParams params = new RequestParams();
+            params.put("token", API_TOKEN);
+            AsyncHttpClient client = new AsyncHttpClient();
+            final ProgressDialog dialog = ProgressDialog.show(Home.this, null,
+                    getString(R.string.loading), true);
+            dialog.show();
+            client.get(API_HELP_URL, params, new AsyncHttpResponseHandler() {
+                @Override
+                public void onSuccess(String response) {
+                    (new Handler()).postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            dialog.dismiss();
+                            Intent intent = new Intent(Home.this, Jobs.class);
+                            Home.this.startActivity(intent);
+                        }
+                    }, 800);
+                }
+            });
+        } catch (Exception e) {
+            showSimpleErrorDialog(getString(R.string.error_unspecified));
+        }
     }
 
     private boolean readPrefs() {
@@ -150,18 +199,21 @@ public class Home extends Activity {
         if (VERSION > getResources().getInteger(R.integer.max_api_version)) return false;
 
         // validate help URL
-        URL url;
         try {
-            url = new URL(URL);
-        } catch (MalformedURLException e) {
+            URL url = new URL(URL);
+            url.toURI();
+        } catch (Exception e) {
             return false;
         }
 
         if (CONTENT.length() == 0) return false;
 
         API_VERSION = VERSION;
-        API_HELP_URL = url;
+        API_HELP_URL = URL;
         API_TOKEN = CONTENT;
+
+        Button scan_or_revoke = (Button) findViewById(R.id.button_scan_or_revoke);
+        scan_or_revoke.setText(R.string.revoke_access);
 
         return true;
     }

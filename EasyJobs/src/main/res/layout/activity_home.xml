@@ -12,7 +12,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/scan_qr_code"
-            android:id="@+id/button_scan_qr_code"
+            android:id="@+id/button_scan_or_revoke"
             android:layout_centerVertical="true"
             android:layout_centerHorizontal="true"/>
 </RelativeLayout>
