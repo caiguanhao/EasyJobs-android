@@ -1,0 +1,17 @@
+*.iml
+*.ipr
+*.iws
+*.apk
+*.ap_
+*.dex
+*.class
+.idea
+bin
+gen
+tmp
+build
+.gradle
+.classpath
+.project
+.settings
+local.properties
