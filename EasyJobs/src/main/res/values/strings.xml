@@ -3,10 +3,16 @@
 
     <string name="app_name">EasyJobs</string>
     <string name="action_settings">Settings</string>
+
+    <integer name="max_api_version">1</integer>
+
     <string name="scan_qr_code">Scan QR Code</string>
     <string name="error">Error</string>
     <string name="error_barcode_scanner_not_installed">It seems that you haven\'t installed the
         Barcode Scanner. Would you like to download and install it now?</string>
+    <string name="error_invalid_content">Invalid content.</string>
+    <string name="error_please_update_app">This app is outdated. Please update it.</string>
+    <string name="error_invalid_url">Content contains an invalid URL.</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
 </resources>

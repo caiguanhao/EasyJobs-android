@@ -7,8 +7,16 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Message;
+import android.util.Base64;
 import android.view.Menu;
 import android.view.View;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class Home extends Activity {
 
@@ -61,10 +69,49 @@ public class Home extends Activity {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
         if (requestCode == 1 && resultCode == RESULT_OK) {
             String content = intent.getStringExtra("SCAN_RESULT");
-            AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-            alertDialog.setMessage(content);
-            alertDialog.setTitle("content");
-            alertDialog.show();
+            if (content == null) return;
+            String decoded_content = null;
+            try {
+                byte[] decoded = Base64.decode(content, Base64.DEFAULT);
+                decoded_content = new String(decoded);
+            } catch (IllegalArgumentException e) {
+                showSimpleErrorDialog(getString(R.string.error_invalid_content));
+            }
+            if (decoded_content != null) {
+                try {
+                    JSONObject object = new JSONObject(decoded_content);
+                    int VERSION = object.getInt("v");
+                    String URL = object.getString("u");
+                    String CONTENT = object.getString("c");
+
+                    // validate version number
+
+                    if (VERSION <= 0) throw new JSONException(null);
+                    if (VERSION > getResources().getInteger(R.integer.max_api_version))
+                        throw new Exception(getString(R.string.error_please_update_app));
+
+                    // validate help URL
+                    URL url = new URL(URL);
+                    url.toURI(); // stop never used warning
+
+                    if (CONTENT.length() == 0)
+                        throw new Exception(getString(R.string.error_invalid_content));
+                } catch (MalformedURLException e) {
+                    showSimpleErrorDialog(getString(R.string.error_invalid_url));
+                } catch (JSONException e) {
+                    showSimpleErrorDialog(getString(R.string.error_invalid_content));
+                } catch (Exception e) {
+                    showSimpleErrorDialog(e.getMessage());
+                }
+            }
         }
+    }
+
+    private void showSimpleErrorDialog(String message) {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setMessage(message);
+        alertDialog.setTitle(R.string.error);
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), (Message) null);
+        alertDialog.show();
     }
 }
