@@ -13,6 +13,9 @@
     <string name="error_invalid_content">Invalid content.</string>
     <string name="error_please_update_app">This app is outdated. Please update it.</string>
     <string name="error_invalid_url">Content contains an invalid URL.</string>
+    <string name="error_already_authenticated">You have already authenticated!</string>
+    <string name="successfully_scanned">Successfully scanned.</string>
+
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
 </resources>
