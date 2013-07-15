@@ -66,6 +66,39 @@ public class JobsDetails extends Activity {
                             data.add(map);
                         }
 
+                        JSONObject interpreter = obj.optJSONObject("interpreter");
+
+                        if (interpreter == null) {
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            map.put("KEY", "Interpreter");
+                            map.put("VALUE", "(default)");
+                            data.add(map);
+                        } else {
+                            Keys = new String[]{"path", "upload_script_first"};
+                            Names = new String[]{"Interpreter", "Upload script first?"};
+
+                            for (int i = 0; i < Keys.length; i++) {
+                                Map<String, Object> map = new HashMap<String, Object>();
+                                map.put("KEY", Names[i]);
+                                map.put("VALUE", interpreter.getString(Keys[i]));
+                                data.add(map);
+                            }
+                        }
+
+                        JSONObject server = obj.getJSONObject("server");
+
+                        Keys = new String[]{"name", "host", "username", "created_at",
+                                "updated_at"};
+                        Names = new String[]{"Server Name", "Host", "Username", "Server created at",
+                                "Server updated at"};
+
+                        for (int i = 0; i < Keys.length; i++) {
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            map.put("KEY", Names[i]);
+                            map.put("VALUE", server.getString(Keys[i]));
+                            data.add(map);
+                        }
+
                         JobsDetailsAdapter adapter = new JobsDetailsAdapter(JobsDetails.this,
                                 R.layout.listview_jobs_details_items, data);
                         ListView listview_jobs_details =
