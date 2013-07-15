@@ -2,8 +2,11 @@ package com.cghio.easyjobs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Message;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
@@ -24,6 +27,9 @@ public class Jobs extends Activity {
 
     private static String JOBS_INDEX_VERB = null;
     private static String JOBS_INDEX_URL = null;
+
+    public static String JOBS_SHOW_VERB = null;
+    public static String JOBS_SHOW_URL = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,11 @@ public class Jobs extends Activity {
                         JSONObject jobsIndexObj = jobsObj.getJSONObject("index");
                         JOBS_INDEX_VERB = jobsIndexObj.getString("verb");
                         JOBS_INDEX_URL = jobsIndexObj.getString("url");
+
+                        JSONObject jobsShowObj = jobsObj.getJSONObject("show");
+                        JOBS_SHOW_VERB = jobsShowObj.getString("verb");
+                        JOBS_SHOW_URL = jobsShowObj.getString("url");
+
                         getJobs();
                     } catch (JSONException e) {
                         showSimpleErrorDialog(getString(R.string.error_unspecified));
@@ -76,7 +87,7 @@ public class Jobs extends Activity {
                             map.put("ID", jobs.getJSONObject(i).getInt("id"));
                             map.put("NAME", jobs.getJSONObject(i).getString("name"));
                             String server = jobs.getJSONObject(i).getString("server_name");
-                            if (server == null) server = getString(R.string.no_server);
+                            if (server.equals("null")) server = getString(R.string.no_server);
                             map.put("SERVER_NAME", server);
                             data.add(map);
                         }
@@ -85,6 +96,18 @@ public class Jobs extends Activity {
                                 new int[]{R.id.text_job_name, R.id.text_server_name});
                         ListView listview_jobs = (ListView) findViewById(R.id.listView_jobs);
                         listview_jobs.setAdapter(adapter);
+                        listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                Object item = adapterView.getAdapter().getItem(i);
+                                if (item instanceof Map) {
+                                    int ID = Integer.parseInt(((Map) item).get("ID").toString());
+                                    Intent intent = new Intent(Jobs.this, JobsDetails.class);
+                                    intent.putExtra("JOB_ID", ID);
+                                    Jobs.this.startActivity(intent);
+                                }
+                            }
+                        });
                     } catch (JSONException e) {
                         showSimpleErrorDialog(getString(R.string.error_unspecified));
                     }
