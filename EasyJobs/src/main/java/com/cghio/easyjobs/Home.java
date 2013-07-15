@@ -17,10 +17,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -163,29 +159,17 @@ public class Home extends Activity {
     }
 
     private void showJobs() {
-        try {
-            RequestParams params = new RequestParams();
-            params.put("token", API_TOKEN);
-            AsyncHttpClient client = new AsyncHttpClient();
-            final ProgressDialog dialog = ProgressDialog.show(Home.this, null,
-                    getString(R.string.loading), true);
-            dialog.show();
-            client.get(API_HELP_URL, params, new AsyncHttpResponseHandler() {
-                @Override
-                public void onSuccess(String response) {
-                    (new Handler()).postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            dialog.dismiss();
-                            Intent intent = new Intent(Home.this, Jobs.class);
-                            Home.this.startActivity(intent);
-                        }
-                    }, 800);
-                }
-            });
-        } catch (Exception e) {
-            showSimpleErrorDialog(getString(R.string.error_unspecified));
-        }
+        final ProgressDialog dialog = ProgressDialog.show(Home.this, null,
+                getString(R.string.loading), true);
+        dialog.show();
+        (new Handler()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                dialog.dismiss();
+                Intent intent = new Intent(Home.this, Jobs.class);
+                Home.this.startActivity(intent);
+            }
+        }, 800);
     }
 
     private boolean readPrefs() {
