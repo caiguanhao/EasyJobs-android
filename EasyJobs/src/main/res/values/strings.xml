@@ -15,7 +15,8 @@
     <string name="error_connection_problem">Connection problem. You may try again.</string>
     <string name="error_should_update_easyjobs">Error reading data. You should update either
         client-side or server-side EasyJobs app.</string>
-    <string name="successfully_scanned">Successfully scanned.</string>
+    <string name="error_need_refresh">You may need to reload the EasyJobs web page and re-scan the
+        QR code.</string>
 
     <string name="na">N/A</string>
     <string name="no_server">(server not specified)</string>

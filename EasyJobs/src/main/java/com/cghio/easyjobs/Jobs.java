@@ -16,7 +16,6 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -111,13 +110,18 @@ public class Jobs extends Activity {
             }
             @Override
             public void onFailure(Throwable e, String response) {
+                String error;
                 if (e != null && e.getCause() != null) {
-                    showSimpleErrorDialog(e.getCause().getMessage());
+                    error = e.getCause().getMessage();
                 } else if (e != null && e.getCause() == null) {
-                    showSimpleErrorDialog(e.getMessage());
+                    error = e.getMessage();
                 } else {
-                    showSimpleErrorDialog(getString(R.string.error_connection_problem));
+                    error = getString(R.string.error_connection_problem);
                 }
+                if (error.matches(".*[Uu]nauthorized.*")) {
+                    error += "\n\n" + getString(R.string.error_need_refresh);
+                }
+                showSimpleErrorDialog(error);
                 showReloadAndScanButton(true);
             }
             @Override
@@ -343,8 +347,6 @@ public class Jobs extends Activity {
                     showSimpleErrorDialog(e.getMessage());
                 }
                 if (readPrefs()) {
-                    Toast.makeText(Jobs.this, R.string.successfully_scanned, Toast.LENGTH_SHORT)
-                            .show();
                     startEasyJobs();
                 }
             }
