@@ -3,6 +3,7 @@ package com.cghio.easyjobs;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -171,17 +172,8 @@ public class JobsDetails extends Activity {
                                 if (i == adapterView.getCount() - 1) {
                                     Object item = adapterView.getAdapter().getItem(i);
                                     if (item instanceof Map) {
-                                        String url = JOBS_RUN_URL;
-                                        url = url.replace(":id", JOBS_DETAILS_ID+"");
                                         String hash = ((Map) item).get("HASH").toString();
-                                        if (hash.length() > 0) {
-                                            url = url + "?hash=" + hash;
-                                            url = url + "&token=" + API_TOKEN;
-
-                                            Intent intent = new Intent(JobsDetails.this, RunJob.class);
-                                            intent.putExtra("URL", url);
-                                            JobsDetails.this.startActivity(intent);
-                                        }
+                                        toRunJob(hash);
                                     }
                                 }
                             }
@@ -213,6 +205,30 @@ public class JobsDetails extends Activity {
                 getJobDetails();
             }
         });
+    }
+
+    private void toRunJob(final String hash) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.confirm_run_job).setPositiveButton("Yes",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        runJob(hash);
+                    }
+                }).setNegativeButton("No", null).show();
+    }
+
+    private void runJob(String hash) {
+        String url = JOBS_RUN_URL;
+        url = url.replace(":id", JOBS_DETAILS_ID+"");
+        if (hash.length() > 0) {
+            url = url + "?hash=" + hash;
+            url = url + "&token=" + API_TOKEN;
+
+            Intent intent = new Intent(JobsDetails.this, RunJob.class);
+            intent.putExtra("URL", url);
+            JobsDetails.this.startActivity(intent);
+        }
     }
 
     private void showSimpleErrorDialog(String message) {

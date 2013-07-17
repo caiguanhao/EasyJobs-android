@@ -18,6 +18,9 @@
     <string name="error_need_refresh">You may need to reload the EasyJobs web page and re-scan the
         QR code.</string>
 
+    <string name="confirm_revoke_access">Are you sure you want to revoke access?</string>
+    <string name="confirm_run_job">Are you sure you want to run this job?</string>
+
     <string name="na">N/A</string>
     <string name="no_server">(server not specified)</string>
 

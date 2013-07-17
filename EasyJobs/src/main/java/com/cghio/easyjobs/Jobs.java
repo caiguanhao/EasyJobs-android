@@ -207,7 +207,7 @@ public class Jobs extends Activity {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                                 if (i == adapterView.getCount() - 1) {
-                                    revokeAccess();
+                                    toRevokeAccess();
                                 } else {
                                     Object item = adapterView.getAdapter().getItem(i);
                                     if (item instanceof Map) {
@@ -351,6 +351,17 @@ public class Jobs extends Activity {
                 }
             }
         }
+    }
+
+    private void toRevokeAccess() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.confirm_revoke_access).setPositiveButton("Yes",
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        revokeAccess();
+                    }
+                }).setNegativeButton("No", null).show();
     }
 
     private void revokeAccess() {
