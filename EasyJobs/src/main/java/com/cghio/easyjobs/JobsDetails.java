@@ -23,30 +23,44 @@ import java.util.Map;
 
 public class JobsDetails extends Activity {
 
-    public static int JOBS_DETAILS_ID = 0;
+    private static String API_TOKEN = "";
+    private static int JOBS_DETAILS_ID = 0;
+    private static String JOBS_SHOW_URL = "";
+    private static String JOBS_RUN_URL = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jobs_details);
         Bundle extras = getIntent().getExtras();
-        if (extras != null && extras.containsKey("JOB_ID")) {
-            JOBS_DETAILS_ID = extras.getInt("JOB_ID");
-            if (JOBS_DETAILS_ID > 0) {
-                getJobDetails();
+        if (extras != null) {
+            if (extras.containsKey("API_TOKEN")) {
+                API_TOKEN = extras.getString("API_TOKEN");
+            }
+            if (extras.containsKey("JOBS_SHOW_URL")) {
+                JOBS_SHOW_URL = extras.getString("JOBS_SHOW_URL");
+            }
+            if (extras.containsKey("JOBS_RUN_URL")) {
+                JOBS_RUN_URL = extras.getString("JOBS_RUN_URL");
+            }
+            if (extras.containsKey("JOB_ID")) {
+                JOBS_DETAILS_ID = extras.getInt("JOB_ID");
+                if (JOBS_DETAILS_ID > 0) {
+                    getJobDetails();
+                }
             }
         }
     }
 
     private void getJobDetails() {
-        if (JOBS_DETAILS_ID == 0 || Home.API_TOKEN.length() == 0 ||Jobs.JOBS_SHOW_URL.length() == 0)
+        if (JOBS_DETAILS_ID == 0 || API_TOKEN.length() == 0 || JOBS_SHOW_URL.length() == 0)
             return;
 
         try {
             RequestParams params = new RequestParams();
-            params.put("token", Home.API_TOKEN);
+            params.put("token", API_TOKEN);
             AsyncHttpClient client = new AsyncHttpClient();
-            String url = Jobs.JOBS_SHOW_URL;
+            String url = JOBS_SHOW_URL;
             url = url.replace(":id", JOBS_DETAILS_ID+"");
             client.get(url, params, new AsyncHttpResponseHandler() {
                 @Override
@@ -135,12 +149,12 @@ public class JobsDetails extends Activity {
                                 if (i == adapterView.getCount() - 1) {
                                     Object item = adapterView.getAdapter().getItem(i);
                                     if (item instanceof Map) {
-                                        String url = Jobs.JOBS_RUN_URL;
+                                        String url = JOBS_RUN_URL;
                                         url = url.replace(":id", JOBS_DETAILS_ID+"");
                                         String hash = ((Map) item).get("HASH").toString();
                                         if (hash.length() > 0) {
                                             url = url + "?hash=" + hash;
-                                            url = url + "&token=" + Home.API_TOKEN;
+                                            url = url + "&token=" + API_TOKEN;
 
                                             Intent intent = new Intent(JobsDetails.this, RunJob.class);
                                             intent.putExtra("URL", url);

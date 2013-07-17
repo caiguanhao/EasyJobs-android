@@ -2,12 +2,8 @@
 <resources>
 
     <string name="app_name">EasyJobs</string>
-    <string name="action_settings">Settings</string>
 
     <integer name="max_api_version">1</integer>
-
-    <string name="scan_qr_code">Scan QR Code</string>
-    <string name="revoke_access">Revoke Access</string>
 
     <string name="error">Error</string>
     <string name="error_barcode_scanner_not_installed">It seems that you haven\'t installed the
