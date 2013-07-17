@@ -2,8 +2,11 @@ package com.cghio.easyjobs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Message;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.loopj.android.http.AsyncHttpClient;
@@ -106,11 +109,47 @@ public class JobsDetails extends Activity {
                             }
                         }
 
+                        String hash = obj.optString("hash", "");
+
+                        if (hash.length() == 0) {
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            map.put("KEY", "Run");
+                            map.put("VALUE", "No script to run.");
+                            data.add(map);
+                        } else {
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            map.put("HASH", hash);
+                            map.put("KEY", "Run");
+                            map.put("VALUE", "Run this job now...");
+                            data.add(map);
+                        }
+
                         JobsDetailsAdapter adapter = new JobsDetailsAdapter(JobsDetails.this,
                                 R.layout.listview_jobs_details_items, data);
                         ListView listview_jobs_details =
                                 (ListView) findViewById(R.id.listview_jobs_details);
                         listview_jobs_details.setAdapter(adapter);
+                        listview_jobs_details.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                if (i == adapterView.getCount() - 1) {
+                                    Object item = adapterView.getAdapter().getItem(i);
+                                    if (item instanceof Map) {
+                                        String url = Jobs.JOBS_RUN_URL;
+                                        url = url.replace(":id", JOBS_DETAILS_ID+"");
+                                        String hash = ((Map) item).get("HASH").toString();
+                                        if (hash.length() > 0) {
+                                            url = url + "?hash=" + hash;
+                                            url = url + "&token=" + Home.API_TOKEN;
+
+                                            Intent intent = new Intent(JobsDetails.this, RunJob.class);
+                                            intent.putExtra("URL", url);
+                                            JobsDetails.this.startActivity(intent);
+                                        }
+                                    }
+                                }
+                            }
+                        });
                     } catch (JSONException e) {
                         showSimpleErrorDialog(getString(R.string.error_unspecified));
                     }

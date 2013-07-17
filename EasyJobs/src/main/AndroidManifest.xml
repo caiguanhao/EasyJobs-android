@@ -31,6 +31,10 @@
                 android:name="com.cghio.easyjobs.JobsDetails"
                 android:label="Job Details" >
         </activity>
+        <activity
+                android:name="com.cghio.easyjobs.RunJob"
+                android:label="Running Job" >
+        </activity>
     </application>
 
 </manifest>

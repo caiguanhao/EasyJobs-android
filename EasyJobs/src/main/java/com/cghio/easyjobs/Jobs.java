@@ -31,6 +31,9 @@ public class Jobs extends Activity {
     public static String JOBS_SHOW_VERB = null;
     public static String JOBS_SHOW_URL = null;
 
+    public static String JOBS_RUN_VERB = null;
+    public static String JOBS_RUN_URL = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +60,10 @@ public class Jobs extends Activity {
                         JSONObject jobsShowObj = jobsObj.getJSONObject("show");
                         JOBS_SHOW_VERB = jobsShowObj.getString("verb");
                         JOBS_SHOW_URL = jobsShowObj.getString("url");
+
+                        JSONObject jobsRunObj = jobsObj.getJSONObject("run");
+                        JOBS_RUN_VERB = jobsRunObj.getString("verb");
+                        JOBS_RUN_URL = jobsRunObj.getString("url");
 
                         getJobs();
                     } catch (JSONException e) {
