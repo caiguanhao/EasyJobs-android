@@ -2,12 +2,14 @@ package com.cghio.easyjobs;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
 import android.view.View;
@@ -38,15 +40,20 @@ public class Jobs extends Activity {
     private static String PREF_URL = "URL";
     private static String PREF_CONTENT = "CONTENT";
 
-    private static String API_HELP_URL = null;
-    private static String API_TOKEN = null;
+    private static String API_HELP_URL = "";
+    private static String API_TOKEN = "";
 
-    private static String JOBS_INDEX_VERB = null;
-    private static String JOBS_INDEX_URL = null;
+    private static String JOBS_INDEX_VERB = "";
+    private static String JOBS_INDEX_URL = "";
 
-    private static String JOBS_SHOW_URL = null;
+    private static String JOBS_SHOW_URL = "";
 
-    private static String JOBS_RUN_URL = null;
+    private static String JOBS_RUN_URL = "";
+
+    private static String REVOKE_TOKEN_URL = "";
+
+    private static ProgressDialog dialog;
+    private static Handler dialogHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,35 +99,53 @@ public class Jobs extends Activity {
 
     private void getHelp() {
         if (API_TOKEN.length() == 0) return;
-        try {
-            RequestParams params = new RequestParams();
-            params.put("token", API_TOKEN);
-            AsyncHttpClient client = new AsyncHttpClient();
-            client.get(API_HELP_URL, params, new AsyncHttpResponseHandler() {
-                @Override
-                public void onSuccess(final String response) {
-                    try {
-                        JSONObject helpObj = new JSONObject(response);
-                        JSONObject jobsObj = helpObj.getJSONObject("jobs");
-                        JSONObject jobsIndexObj = jobsObj.getJSONObject("index");
-                        JOBS_INDEX_VERB = jobsIndexObj.getString("verb");
-                        JOBS_INDEX_URL = jobsIndexObj.getString("url");
-
-                        JSONObject jobsShowObj = jobsObj.getJSONObject("show");
-                        JOBS_SHOW_URL = jobsShowObj.getString("url");
-
-                        JSONObject jobsRunObj = jobsObj.getJSONObject("run");
-                        JOBS_RUN_URL = jobsRunObj.getString("url");
-
-                        getJobs();
-                    } catch (JSONException e) {
-                        showSimpleErrorDialog(getString(R.string.error_unspecified));
-                    }
+        RequestParams params = new RequestParams();
+        params.put("token", API_TOKEN);
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.setTimeout(5000);
+        showLoading();
+        client.get(API_HELP_URL, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onFinish() {
+                hideLoading();
+            }
+            @Override
+            public void onFailure(Throwable e, String response) {
+                if (e != null && e.getCause() != null) {
+                    showSimpleErrorDialog(e.getCause().getMessage());
+                } else if (e != null && e.getCause() == null) {
+                    showSimpleErrorDialog(e.getMessage());
+                } else {
+                    showSimpleErrorDialog(getString(R.string.error_connection_problem));
                 }
-            });
-        } catch (Exception e) {
-            showSimpleErrorDialog(getString(R.string.error_unspecified));
-        }
+                showReloadAndScanButton(true);
+            }
+            @Override
+            public void onSuccess(final String response) {
+                try {
+                    JSONObject helpObj = new JSONObject(response);
+                    JSONObject jobsObj = helpObj.getJSONObject("jobs");
+                    JSONObject jobsIndexObj = jobsObj.getJSONObject("index");
+                    JOBS_INDEX_VERB = jobsIndexObj.getString("verb");
+                    JOBS_INDEX_URL = jobsIndexObj.getString("url");
+
+                    JSONObject jobsShowObj = jobsObj.getJSONObject("show");
+                    JOBS_SHOW_URL = jobsShowObj.getString("url");
+
+                    JSONObject jobsRunObj = jobsObj.getJSONObject("run");
+                    JOBS_RUN_URL = jobsRunObj.getString("url");
+
+                    JSONObject tokensObj = helpObj.getJSONObject("tokens");
+                    JSONObject tokensRevokeObj = tokensObj.getJSONObject("revoke");
+                    REVOKE_TOKEN_URL = tokensRevokeObj.getString("url");
+
+                    getJobs();
+                } catch (JSONException e) {
+                    showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
+                    showReloadAndScanButton(true);
+                }
+            }
+        });
     }
 
     private void getJobs() {
@@ -129,7 +154,24 @@ public class Jobs extends Activity {
             AsyncHttpClient client = new AsyncHttpClient();
             RequestParams params = new RequestParams();
             params.put("token", API_TOKEN);
+            client.setTimeout(5000);
+            showLoading();
             client.get(JOBS_INDEX_URL, params, new AsyncHttpResponseHandler() {
+                @Override
+                public void onFinish() {
+                    hideLoading();
+                }
+                @Override
+                public void onFailure(Throwable e, String response) {
+                    if (e != null && e.getCause() != null) {
+                        showSimpleErrorDialog(e.getCause().getMessage());
+                    } else if (e != null && e.getCause() == null) {
+                        showSimpleErrorDialog(e.getMessage());
+                    } else {
+                        showSimpleErrorDialog(getString(R.string.error_connection_problem));
+                    }
+                    showReloadAndScanButton(true);
+                }
                 @Override
                 public void onSuccess(String response) {
                     try {
@@ -177,7 +219,8 @@ public class Jobs extends Activity {
                             }
                         });
                     } catch (JSONException e) {
-                        showSimpleErrorDialog(getString(R.string.error_unspecified));
+                        showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
+                        showReloadAndScanButton(true);
                     }
                 }
             });
@@ -185,8 +228,20 @@ public class Jobs extends Activity {
     }
 
     private void showScanButton() {
+        showReloadAndScanButton(false);
+    }
+
+    private void showReloadAndScanButton(boolean withRetryButton) {
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = new HashMap<String, Object>();
+        if (withRetryButton) {
+            map.put("T", 0);
+            map.put("K", "Retry");
+            map.put("V", "Try connecting to server again.");
+            data.add(map);
+        }
+        map = new HashMap<String, Object>();
+        map.put("T", 1);
         map.put("K", "Scan QR Code");
         map.put("V", "Browse EasyJobs web page, scan the QR code in your account settings page.");
         data.add(map);
@@ -198,7 +253,17 @@ public class Jobs extends Activity {
         listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                openScanner();
+                Object item = adapterView.getAdapter().getItem(i);
+                if (item instanceof Map) {
+                    switch (Integer.parseInt(((Map) item).get("T").toString())) {
+                        case 0:
+                            startEasyJobs();
+                            break;
+                        case 1:
+                            openScanner();
+                            break;
+                    }
+                }
             }
         });
     }
@@ -280,7 +345,7 @@ public class Jobs extends Activity {
                 if (readPrefs()) {
                     Toast.makeText(Jobs.this, R.string.successfully_scanned, Toast.LENGTH_SHORT)
                             .show();
-                    getHelp();
+                    startEasyJobs();
                 }
             }
         }
@@ -293,6 +358,14 @@ public class Jobs extends Activity {
         editor.remove(PREF_URL);
         editor.remove(PREF_CONTENT);
         editor.commit();
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        client.delete(REVOKE_TOKEN_URL + "?token=" + API_TOKEN, new AsyncHttpResponseHandler(){
+            @Override
+            public void onSuccess(String response) {
+            }
+        });
+
         startEasyJobs();
     }
 
@@ -302,5 +375,30 @@ public class Jobs extends Activity {
         alertDialog.setTitle(R.string.error);
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), (Message) null);
         alertDialog.show();
+    }
+
+    private void showLoading() {
+        dialog = new ProgressDialog(Jobs.this);
+        dialog.setMessage(getString(R.string.loading));
+        dialog.setCancelable(false);
+        if (dialogHandler == null) {
+            dialogHandler = new Handler();
+        }
+        dialogHandler.postDelayed(new Runnable() {
+            public void run() {
+                if (dialog != null) dialog.show();
+            }
+        }, 600);
+    }
+
+    private void hideLoading() {
+        if (dialogHandler != null) {
+            dialogHandler.removeCallbacksAndMessages(null);
+            dialogHandler = null;
+        }
+        if (dialog != null) {
+            dialog.dismiss();
+            dialog = null;
+        }
     }
 }
