@@ -26,6 +26,7 @@
 
     <string name="loading">Loading...</string>
 
+    <string name="reload">Reload</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
 

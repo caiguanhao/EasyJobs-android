@@ -12,6 +12,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -60,6 +63,24 @@ public class Jobs extends Activity {
         setContentView(R.layout.activity_jobs);
 
         startEasyJobs();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.reload_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.reload:
+                startEasyJobs();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void startEasyJobs() {

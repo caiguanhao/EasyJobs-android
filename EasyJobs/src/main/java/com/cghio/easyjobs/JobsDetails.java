@@ -9,6 +9,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.format.DateUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -61,6 +64,24 @@ public class JobsDetails extends Activity {
                     getJobDetails();
                 }
             }
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.reload_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.reload:
+                getJobDetails();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -266,6 +287,7 @@ public class JobsDetails extends Activity {
     }
 
     private void showLoading() {
+        hideLoading();
         dialog = new ProgressDialog(JobsDetails.this);
         dialog.setMessage(getString(R.string.loading));
         dialog.setCancelable(false);
