@@ -25,15 +25,15 @@
         </activity>
         <activity
             android:name="com.cghio.easyjobs.JobsDetails"
-            android:label="Job Details" >
+            android:label="@string/job_details" >
         </activity>
         <activity
             android:name="com.cghio.easyjobs.RunJob"
-            android:label="Running Job" >
+            android:label="@string/running_job" >
         </activity>
         <activity
             android:name="com.cghio.easyjobs.Parameters"
-            android:label="Parameters" >
+            android:label="@string/parameters" >
         </activity>
     </application>
 

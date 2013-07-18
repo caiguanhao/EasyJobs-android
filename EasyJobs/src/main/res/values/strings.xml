@@ -2,6 +2,9 @@
 <resources>
 
     <string name="app_name">EasyJobs</string>
+    <string name="job_details">Job Details</string>
+    <string name="running_job">Running Job</string>
+    <string name="parameters">Parameters</string>
 
     <integer name="max_api_version">1</integer>
 

@@ -375,13 +375,13 @@ public class Jobs extends EasyJobsBase {
 
     private void toRevokeAccess() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.confirm_revoke_access).setPositiveButton("Yes",
+        builder.setMessage(R.string.confirm_revoke_access).setPositiveButton(R.string.yes,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         revokeAccess();
                     }
-                }).setNegativeButton("No", null).show();
+                }).setNegativeButton(R.string.no, null).show();
     }
 
     private void revokeAccess() {
