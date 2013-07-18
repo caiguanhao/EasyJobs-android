@@ -45,7 +45,7 @@ public class Parameters extends EasyJobsBase {
             if (extras.containsKey("PARAM")) {
                 PARAM = extras.getString("PARAM");
                 if (PARAM != null && PARAM.length() > 0) {
-                    setTitle("Parameter: " + PARAM);
+                    setTitle(String.format(getString(R.string.parameter_x), PARAM));
                 }
             }
             if (extras.containsKey("API_TOKEN")) {
@@ -62,7 +62,7 @@ public class Parameters extends EasyJobsBase {
         data = new ArrayList<Map<String, Object>>();
 
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("V", "Custom value...");
+        map.put("V", getString(R.string.custom_value_));
         data.add(map);
     }
 
@@ -153,7 +153,7 @@ public class Parameters extends EasyJobsBase {
 
     private void showCustomInput() {
         AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Custom value");
+        alert.setTitle(getString(R.string.custom_value));
         final EditText input = new EditText(this);
         input.setSingleLine();
         input.setText(DEFAULT);
@@ -174,8 +174,8 @@ public class Parameters extends EasyJobsBase {
     private void showReloadButton() {
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("K", "Retry");
-        map.put("V", "Try connecting to server again.");
+        map.put("K", getString(R.string.retry));
+        map.put("V", getString(R.string.retry_desc));
         data.add(map);
         SimpleAdapter adapter = new SimpleAdapter(Parameters.this, data,
                 R.layout.listview_jobs_items, new String[]{"K", "V"},

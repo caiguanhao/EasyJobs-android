@@ -134,10 +134,8 @@ public class JobsDetails extends EasyJobsBase {
                         JSONObject obj = new JSONObject(response);
                         JSONObject job = obj.getJSONObject("job");
 
-                        String[] Keys = new String[]{"name", "script", "id", "created_at",
-                                "updated_at", "mean_time"};
-                        String[] Names = new String[]{"Name", "Script", "ID", "Created at",
-                                "Updated at", "Mean time"};
+                        String[] Keys = getResources().getStringArray(R.array.jobs_keys);
+                        String[] Names = getResources().getStringArray(R.array.jobs_values);
 
                         for (int i = 0; i < Keys.length; i++) {
                             Map<String, Object> map = new HashMap<String, Object>();
@@ -156,14 +154,14 @@ public class JobsDetails extends EasyJobsBase {
 
                         if (interpreter == null) {
                             Map<String, Object> map = new HashMap<String, Object>();
-                            map.put("KEY", "Interpreter");
-                            map.put("VALUE", "(default)");
+                            map.put("KEY", getString(R.string.interpreter));
+                            map.put("VALUE", getString(R.string.default_interpreter));
                             data.add(map);
 
                             jobHasNoInterpreter = true;
                         } else {
-                            Keys = new String[]{"path", "upload_script_first"};
-                            Names = new String[]{"Interpreter", "Upload script first?"};
+                            Keys = getResources().getStringArray(R.array.interpreters_keys);
+                            Names = getResources().getStringArray(R.array.interpreters_values);
 
                             for (int i = 0; i < Keys.length; i++) {
                                 Map<String, Object> map = new HashMap<String, Object>();
@@ -177,14 +175,12 @@ public class JobsDetails extends EasyJobsBase {
 
                         if (server == null) {
                             Map<String, Object> map = new HashMap<String, Object>();
-                            map.put("KEY", "Server");
+                            map.put("KEY", getString(R.string.server));
                             map.put("VALUE", getString(R.string.no_server));
                             data.add(map);
                         } else {
-                            Keys = new String[]{"name", "host", "username", "created_at",
-                                    "updated_at"};
-                            Names = new String[]{"Server Name", "Host", "Username", "Server created at",
-                                    "Server updated at"};
+                            Keys = getResources().getStringArray(R.array.servers_keys);
+                            Names = getResources().getStringArray(R.array.servers_values);
 
                             for (int i = 0; i < Keys.length; i++) {
                                 Map<String, Object> map = new HashMap<String, Object>();
@@ -204,7 +200,8 @@ public class JobsDetails extends EasyJobsBase {
                             while (matcher.find()) {
                                 Map<String, Object> map = new HashMap<String, Object>();
                                 map.put("PARAM", matcher.group(1));
-                                map.put("KEY", "Variable: " + matcher.group(1));
+                                map.put("KEY", String.format(getString(R.string.variable_x),
+                                        matcher.group(1)));
                                 map.put("VALUE", NOT_DEFINED);
                                 data.add(map);
                             }
@@ -214,14 +211,14 @@ public class JobsDetails extends EasyJobsBase {
 
                         if (hash.length() == 0) {
                             Map<String, Object> map = new HashMap<String, Object>();
-                            map.put("KEY", "Run");
-                            map.put("VALUE", "No script to run.");
+                            map.put("KEY", getString(R.string.run));
+                            map.put("VALUE", getString(R.string.run_no));
                             data.add(map);
                         } else {
                             Map<String, Object> map = new HashMap<String, Object>();
                             map.put("HASH", hash);
-                            map.put("KEY", "Run");
-                            map.put("VALUE", "Run this job now...");
+                            map.put("KEY", getString(R.string.run));
+                            map.put("VALUE", getString(R.string.run_now));
                             data.add(map);
                         }
 
@@ -259,8 +256,8 @@ public class JobsDetails extends EasyJobsBase {
     private void showReloadButton() {
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("KEY", "Error connecting to server.");
-        map.put("VALUE", "Retry");
+        map.put("KEY", getString(R.string.error_connecting));
+        map.put("VALUE", getString(R.string.retry));
         data.add(map);
         JobsDetailsAdapter adapter = new JobsDetailsAdapter(JobsDetails.this,
                 R.layout.listview_jobs_details_items, data);
@@ -277,13 +274,13 @@ public class JobsDetails extends EasyJobsBase {
 
     private void toRunJob(final String hash) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setMessage(R.string.confirm_run_job).setPositiveButton("Yes",
+        builder.setMessage(R.string.confirm_run_job).setPositiveButton(R.string.yes,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         runJob(hash);
                     }
-                }).setNegativeButton("No", null).show();
+                }).setNegativeButton(R.string.no, null).show();
     }
 
     private void runJob(String hash) {

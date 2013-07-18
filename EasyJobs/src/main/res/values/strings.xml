@@ -8,7 +8,7 @@
     <string name="error">Error</string>
     <string name="error_barcode_scanner_not_installed">It seems that you haven\'t installed the
         Barcode Scanner. Would you like to download and install it now?</string>
-    <string name="error_invalid_content">Invalid content.</string>
+    <string name="error_invalid_qrcode">Invalid QR code.</string>
     <string name="error_please_update_app">This app is outdated. Please update it.</string>
     <string name="error_invalid_url">Content contains an invalid URL.</string>
     <string name="error_unspecified">Unspecified error.</string>
@@ -17,17 +17,91 @@
         client-side or server-side EasyJobs app.</string>
     <string name="error_need_refresh">You may need to reload the EasyJobs web page and re-scan the
         QR code.</string>
+    <string name="error_connecting">Error connecting to server.</string>
 
     <string name="confirm_revoke_access">Are you sure you want to revoke access?</string>
     <string name="confirm_run_job">Are you sure you want to run this job?</string>
 
+    <string name="revoke_access">Revoke Access</string>
+    <string name="revoke_access_desc">Remove access credentials on your phone and renew token on
+        server.</string>
+
+    <string name="retry">Retry</string>
+    <string name="retry_desc">Try connecting to server again.</string>
+
+    <string name="scan">Scan QR Code</string>
+    <string name="scan_desc">Browse EasyJobs web page, scan the QR code in your account settings
+        page.</string>
+
     <string name="na">N/A</string>
-    <string name="no_server">(server not specified)</string>
 
     <string name="loading">Loading...</string>
 
     <string name="reload">Reload</string>
     <string name="cancel">Cancel</string>
     <string name="ok">OK</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string-array name="jobs_keys">
+        <item>name</item>
+        <item>script</item>
+        <item>id</item>
+        <item>created_at</item>
+        <item>updated_at</item>
+        <item>mean_time</item>
+    </string-array>
+
+    <string-array name="jobs_values">
+        <item>Name</item>
+        <item>Script</item>
+        <item>ID</item>
+        <item>Created at</item>
+        <item>Updated at</item>
+        <item>Mean time</item>
+    </string-array>
+
+    <string name="interpreter">Interpreter</string>
+    <string name="default_interpreter">(default)</string>
+
+    <string-array name="interpreters_keys">
+        <item>path</item>
+        <item>upload_script_first</item>
+    </string-array>
+
+    <string-array name="interpreters_values">
+        <item>Interpreter</item>
+        <item>Upload script first?</item>
+    </string-array>
+
+    <string name="server">Server</string>
+    <string name="no_server">(server not specified)</string>
+
+    <string-array name="servers_keys">
+        <item>name</item>
+        <item>host</item>
+        <item>username</item>
+        <item>created_at</item>
+        <item>updated_at</item>
+    </string-array>
+
+    <string-array name="servers_values">
+        <item>Server Name</item>
+        <item>Host</item>
+        <item>Username</item>
+        <item>Server created at</item>
+        <item>Server updated at</item>
+    </string-array>
+
+    <string name="variable_x">Variable: %1$s</string>
+
+    <string name="run">Run</string>
+    <string name="run_no">No script to run.</string>
+    <string name="run_now">Run this job now...</string>
+
+    <string name="parameter_x">Parameter: %1$s</string>
+
+    <string name="custom_value">Custom value</string>
+    <string name="custom_value_">Custom value...</string>
 
 </resources>

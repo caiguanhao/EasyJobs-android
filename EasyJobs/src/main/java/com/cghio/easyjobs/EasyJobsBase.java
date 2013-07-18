@@ -31,6 +31,11 @@ public class EasyJobsBase extends Activity {
                 if (dialog != null) dialog.show();
             }
         }, 600);
+        dialogHandler.postDelayed(new Runnable() {
+            public void run() {
+                hideLoading();
+            }
+        }, 5000);
     }
 
     protected void hideLoading() {

@@ -124,11 +124,8 @@ public class Jobs extends EasyJobsBase {
         showLoading();
         client.get(API_HELP_URL, params, new AsyncHttpResponseHandler() {
             @Override
-            public void onFinish() {
-                hideLoading();
-            }
-            @Override
             public void onFailure(Throwable e, String response) {
+                hideLoading();
                 String error;
                 if (e != null && e.getCause() != null) {
                     error = e.getCause().getMessage();
@@ -145,6 +142,7 @@ public class Jobs extends EasyJobsBase {
             }
             @Override
             public void onSuccess(final String response) {
+                hideLoading();
                 try {
                     JSONObject helpObj = new JSONObject(response);
                     JSONObject jobsObj = helpObj.getJSONObject("jobs");
@@ -185,11 +183,8 @@ public class Jobs extends EasyJobsBase {
             showLoading();
             client.get(JOBS_INDEX_URL, params, new AsyncHttpResponseHandler() {
                 @Override
-                public void onFinish() {
-                    hideLoading();
-                }
-                @Override
                 public void onFailure(Throwable e, String response) {
+                    hideLoading();
                     if (e != null && e.getCause() != null) {
                         showSimpleErrorDialog(e.getCause().getMessage());
                     } else if (e != null && e.getCause() == null) {
@@ -201,6 +196,7 @@ public class Jobs extends EasyJobsBase {
                 }
                 @Override
                 public void onSuccess(String response) {
+                    hideLoading();
                     try {
                         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
 
@@ -216,9 +212,8 @@ public class Jobs extends EasyJobsBase {
                         }
 
                         Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("NAME", "Revoke Access");
-                        map.put("SERVER_NAME", "Remove access credentials on your phone and " +
-                                "renew token on server.");
+                        map.put("NAME", getString(R.string.revoke_access));
+                        map.put("SERVER_NAME", getString(R.string.revoke_access_desc));
                         data.add(map);
 
                         SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
@@ -265,14 +260,14 @@ public class Jobs extends EasyJobsBase {
         Map<String, Object> map = new HashMap<String, Object>();
         if (withRetryButton) {
             map.put("T", 0);
-            map.put("K", "Retry");
-            map.put("V", "Try connecting to server again.");
+            map.put("K", getString(R.string.retry));
+            map.put("V", getString(R.string.retry_desc));
             data.add(map);
         }
         map = new HashMap<String, Object>();
         map.put("T", 1);
-        map.put("K", "Scan QR Code");
-        map.put("V", "Browse EasyJobs web page, scan the QR code in your account settings page.");
+        map.put("K", getString(R.string.scan));
+        map.put("V", getString(R.string.scan_desc));
         data.add(map);
         SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
                 R.layout.listview_jobs_items, new String[]{"K", "V"},
@@ -335,7 +330,7 @@ public class Jobs extends EasyJobsBase {
                 byte[] decoded = Base64.decode(content, Base64.DEFAULT);
                 decoded_content = new String(decoded);
             } catch (IllegalArgumentException e) {
-                showSimpleErrorDialog(getString(R.string.error_invalid_content));
+                showSimpleErrorDialog(getString(R.string.error_invalid_qrcode));
             }
             if (decoded_content != null) {
                 try {
@@ -355,7 +350,7 @@ public class Jobs extends EasyJobsBase {
                     url.toURI(); // stop never used warning
 
                     if (CONTENT.length() == 0)
-                        throw new Exception(getString(R.string.error_invalid_content));
+                        throw new Exception(getString(R.string.error_invalid_qrcode));
 
                     SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
                     SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -367,7 +362,7 @@ public class Jobs extends EasyJobsBase {
                 } catch (MalformedURLException e) {
                     showSimpleErrorDialog(getString(R.string.error_invalid_url));
                 } catch (JSONException e) {
-                    showSimpleErrorDialog(getString(R.string.error_invalid_content));
+                    showSimpleErrorDialog(getString(R.string.error_invalid_qrcode));
                 } catch (Exception e) {
                     showSimpleErrorDialog(e.getMessage());
                 }
