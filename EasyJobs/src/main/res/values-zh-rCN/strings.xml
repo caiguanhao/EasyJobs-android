@@ -6,8 +6,6 @@
     <string name="running_job">运行任务</string>
     <string name="parameters">参数</string>
 
-    <integer name="max_api_version">1</integer>
-
     <string name="error">错误</string>
     <string name="error_barcode_scanner_not_installed">你好像还没有安装条码扫描器。你要现在下载并安装这个软件吗？</string>
     <string name="error_invalid_qrcode">不正确的QR码。</string>

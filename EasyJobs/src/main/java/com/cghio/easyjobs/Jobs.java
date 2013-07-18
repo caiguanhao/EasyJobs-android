@@ -97,7 +97,7 @@ public class Jobs extends EasyJobsBase {
 
         // validate version number
         if (VERSION <= 0) return false;
-        if (VERSION > getResources().getInteger(R.integer.max_api_version)) return false;
+        if (VERSION > MAX_API_VERSION) return false;
 
         // validate help URL
         try {
@@ -120,7 +120,7 @@ public class Jobs extends EasyJobsBase {
         RequestParams params = new RequestParams();
         params.put("token", API_TOKEN);
         AsyncHttpClient client = new AsyncHttpClient();
-        client.setTimeout(5000);
+        client.setTimeout(TIMEOUT);
         showLoading();
         client.get(API_HELP_URL, params, new AsyncHttpResponseHandler() {
             @Override
@@ -179,7 +179,7 @@ public class Jobs extends EasyJobsBase {
             AsyncHttpClient client = new AsyncHttpClient();
             RequestParams params = new RequestParams();
             params.put("token", API_TOKEN);
-            client.setTimeout(5000);
+            client.setTimeout(TIMEOUT);
             showLoading();
             client.get(JOBS_INDEX_URL, params, new AsyncHttpResponseHandler() {
                 @Override
@@ -342,7 +342,7 @@ public class Jobs extends EasyJobsBase {
                     // validate version number
 
                     if (VERSION <= 0) throw new JSONException(null);
-                    if (VERSION > getResources().getInteger(R.integer.max_api_version))
+                    if (VERSION > MAX_API_VERSION)
                         throw new Exception(getString(R.string.error_please_update_app));
 
                     // validate help URL

@@ -109,7 +109,7 @@ public class JobsDetails extends EasyJobsBase {
             AsyncHttpClient client = new AsyncHttpClient();
             String url = JOBS_SHOW_URL;
             url = url.replace(":id", JOBS_DETAILS_ID+"");
-            client.setTimeout(5000);
+            client.setTimeout(TIMEOUT);
             showLoading();
             client.get(url, params, new AsyncHttpResponseHandler() {
                 @Override

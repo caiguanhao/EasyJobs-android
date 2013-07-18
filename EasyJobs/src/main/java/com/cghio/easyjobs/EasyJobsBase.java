@@ -8,6 +8,9 @@ import android.os.Message;
 
 public class EasyJobsBase extends Activity {
 
+    protected int TIMEOUT = 5000;
+    protected int MAX_API_VERSION = 1;
+
     private ProgressDialog dialog;
     private Handler dialogHandler;
 
@@ -35,7 +38,7 @@ public class EasyJobsBase extends Activity {
             public void run() {
                 hideLoading();
             }
-        }, 5000);
+        }, TIMEOUT);
     }
 
     protected void hideLoading() {

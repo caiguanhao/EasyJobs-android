@@ -6,8 +6,6 @@
     <string name="running_job">Running Job</string>
     <string name="parameters">Parameters</string>
 
-    <integer name="max_api_version">1</integer>
-
     <string name="error">Error</string>
     <string name="error_barcode_scanner_not_installed">It seems that you haven\'t installed the
         Barcode Scanner. Would you like to download and install it now?</string>

@@ -85,7 +85,7 @@ public class Parameters extends EasyJobsBase {
         RequestParams params = new RequestParams();
         params.put("token", API_TOKEN);
         AsyncHttpClient client = new AsyncHttpClient();
-        client.setTimeout(5000);
+        client.setTimeout(TIMEOUT);
         showLoading();
         client.get(JOBS_PARAMETERS_INDEX_URL, params, new AsyncHttpResponseHandler() {
             @Override
