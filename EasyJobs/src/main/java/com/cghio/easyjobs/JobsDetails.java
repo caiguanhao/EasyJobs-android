@@ -247,7 +247,8 @@ public class JobsDetails extends Activity {
                                         toRunJob(hash);
                                     }
                                     if (((Map) item).containsKey("PARAM")) {
-                                        showParams(((Map) item).get("PARAM").toString());
+                                        showParams(((Map) item).get("PARAM").toString(),
+                                                ((Map) item).get("VALUE").toString());
                                     }
                                 }
                             }
@@ -332,10 +333,12 @@ public class JobsDetails extends Activity {
         return params;
     }
 
-    private void showParams(String param) {
+    private void showParams(String param, String defaultValue) {
         Intent intent = new Intent(JobsDetails.this, Parameters.class);
         intent.putExtra("JOBS_PARAMETERS_INDEX_URL", JOBS_PARAMETERS_INDEX_URL);
         intent.putExtra("API_TOKEN", API_TOKEN);
+        if (defaultValue.equals(NOT_DEFINED)) defaultValue = "";
+        intent.putExtra("DEFAULT", defaultValue);
         intent.putExtra("PARAM", param);
         JobsDetails.this.startActivityForResult(intent, 1);
     }

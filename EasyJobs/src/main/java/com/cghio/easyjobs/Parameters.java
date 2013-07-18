@@ -33,6 +33,7 @@ public class Parameters extends Activity {
     private static String API_TOKEN = "";
     private static String JOBS_PARAMETERS_INDEX_URL = "";
     private static String PARAM = "";
+    private static String DEFAULT = "";
 
     private static ProgressDialog dialog;
     private static Handler dialogHandler;
@@ -50,9 +51,15 @@ public class Parameters extends Activity {
             }
             if (extras.containsKey("PARAM")) {
                 PARAM = extras.getString("PARAM");
+                if (PARAM != null && PARAM.length() > 0) {
+                    setTitle("Parameter: " + PARAM);
+                }
             }
             if (extras.containsKey("API_TOKEN")) {
                 API_TOKEN = extras.getString("API_TOKEN");
+            }
+            if (extras.containsKey("DEFAULT")) {
+                DEFAULT = extras.getString("DEFAULT");
             }
         }
         getParams();
@@ -156,6 +163,7 @@ public class Parameters extends Activity {
         alert.setTitle("Custom value");
         final EditText input = new EditText(this);
         input.setSingleLine();
+        input.setText(DEFAULT);
         alert.setView(input);
         alert.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int whichButton) {
