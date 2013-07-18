@@ -68,6 +68,12 @@ public class JobsDetails extends Activity {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        hideLoading();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.reload_menu, menu);
