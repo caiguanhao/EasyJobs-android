@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -197,11 +198,15 @@ public class JobsDetails extends EasyJobsBase {
                         if (jobHasNoInterpreter) {
                             Pattern replace = Pattern.compile("[^\\%]?\\%\\{(.*?)\\}");
                             Matcher matcher = replace.matcher(jobScript);
+                            List<String> list = new ArrayList<String>();
                             while (matcher.find()) {
+                                list.add(matcher.group(1));
+                            }
+                            list = new ArrayList<String>(new HashSet<String>(list));
+                            for (String match : list) {
                                 Map<String, Object> map = new HashMap<String, Object>();
-                                map.put("PARAM", matcher.group(1));
-                                map.put("KEY", String.format(getString(R.string.variable_x),
-                                        matcher.group(1)));
+                                map.put("PARAM", match);
+                                map.put("KEY", String.format(getString(R.string.variable_x), match));
                                 map.put("VALUE", NOT_DEFINED);
                                 data.add(map);
                             }
