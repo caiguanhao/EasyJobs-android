@@ -9,7 +9,8 @@ How to use
 ----------
 
 * Log into EasyJobs and visit your profile edit page.
-* Scan the mobile authentication QR code on the web page.
+  * Click the authentication link if you're visiting web page on Android.
+  * or scan the mobile authentication QR code on the web page.
 * Browse jobs.
 * Enter parameters if the job has variables.
 * Run the job and see the job result.
