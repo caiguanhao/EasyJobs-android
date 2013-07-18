@@ -54,7 +54,23 @@ public class Jobs extends EasyJobsBase {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jobs);
 
-        startEasyJobs();
+        String fromURI = null;
+        Intent intent = getIntent();
+        if (intent != null) {
+            Uri data = getIntent().getData();
+            if (data != null) {
+                fromURI = data.getSchemeSpecificPart();
+            }
+        }
+
+        if (fromURI != null) {
+            if (readPrefs()) {
+                revokeAccessOnly();
+            }
+            decode(fromURI.substring(2));
+        } else {
+            startEasyJobs();
+        }
     }
 
     @Override
@@ -325,50 +341,54 @@ public class Jobs extends EasyJobsBase {
         if (requestCode == 1 && resultCode == RESULT_OK) {
             String content = intent.getStringExtra("SCAN_RESULT");
             if (content == null) return;
-            String decoded_content = null;
+            decode(content);
+        }
+    }
+
+    private void decode(String content) {
+        String decoded_content = null;
+        try {
+            byte[] decoded = Base64.decode(content, Base64.DEFAULT);
+            decoded_content = new String(decoded);
+        } catch (IllegalArgumentException e) {
+            showSimpleErrorDialog(getString(R.string.error_invalid_qrcode));
+        }
+        if (decoded_content != null) {
             try {
-                byte[] decoded = Base64.decode(content, Base64.DEFAULT);
-                decoded_content = new String(decoded);
-            } catch (IllegalArgumentException e) {
+                JSONObject object = new JSONObject(decoded_content);
+                int VERSION = object.getInt("v");
+                String URL = object.getString("u");
+                String CONTENT = object.getString("c");
+
+                // validate version number
+
+                if (VERSION <= 0) throw new JSONException(null);
+                if (VERSION > MAX_API_VERSION)
+                    throw new Exception(getString(R.string.error_please_update_app));
+
+                // validate help URL
+                URL url = new URL(URL);
+                url.toURI(); // stop never used warning
+
+                if (CONTENT.length() == 0)
+                    throw new Exception(getString(R.string.error_invalid_qrcode));
+
+                SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putInt(PREF_VERSION, VERSION);
+                editor.putString(PREF_URL, URL);
+                editor.putString(PREF_CONTENT, CONTENT);
+                editor.commit();
+
+            } catch (MalformedURLException e) {
+                showSimpleErrorDialog(getString(R.string.error_invalid_url));
+            } catch (JSONException e) {
                 showSimpleErrorDialog(getString(R.string.error_invalid_qrcode));
+            } catch (Exception e) {
+                showSimpleErrorDialog(e.getMessage());
             }
-            if (decoded_content != null) {
-                try {
-                    JSONObject object = new JSONObject(decoded_content);
-                    int VERSION = object.getInt("v");
-                    String URL = object.getString("u");
-                    String CONTENT = object.getString("c");
-
-                    // validate version number
-
-                    if (VERSION <= 0) throw new JSONException(null);
-                    if (VERSION > MAX_API_VERSION)
-                        throw new Exception(getString(R.string.error_please_update_app));
-
-                    // validate help URL
-                    URL url = new URL(URL);
-                    url.toURI(); // stop never used warning
-
-                    if (CONTENT.length() == 0)
-                        throw new Exception(getString(R.string.error_invalid_qrcode));
-
-                    SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
-                    SharedPreferences.Editor editor = sharedPrefs.edit();
-                    editor.putInt(PREF_VERSION, VERSION);
-                    editor.putString(PREF_URL, URL);
-                    editor.putString(PREF_CONTENT, CONTENT);
-                    editor.commit();
-
-                } catch (MalformedURLException e) {
-                    showSimpleErrorDialog(getString(R.string.error_invalid_url));
-                } catch (JSONException e) {
-                    showSimpleErrorDialog(getString(R.string.error_invalid_qrcode));
-                } catch (Exception e) {
-                    showSimpleErrorDialog(e.getMessage());
-                }
-                if (readPrefs()) {
-                    startEasyJobs();
-                }
+            if (readPrefs()) {
+                startEasyJobs();
             }
         }
     }
@@ -384,7 +404,7 @@ public class Jobs extends EasyJobsBase {
                 }).setNegativeButton(R.string.no, null).show();
     }
 
-    private void revokeAccess() {
+    private void revokeAccessOnly() {
         SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.remove(PREF_VERSION);
@@ -398,7 +418,10 @@ public class Jobs extends EasyJobsBase {
             public void onSuccess(String response) {
             }
         });
+    }
 
+    private void revokeAccess() {
+        revokeAccessOnly();
         startEasyJobs();
     }
 
