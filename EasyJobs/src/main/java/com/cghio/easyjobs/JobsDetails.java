@@ -1,13 +1,9 @@
 package com.cghio.easyjobs;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.text.format.DateUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,7 +33,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JobsDetails extends Activity {
+public class JobsDetails extends EasyJobsBase {
 
     private static String API_TOKEN = "";
     private static int JOBS_DETAILS_ID = 0;
@@ -48,9 +44,6 @@ public class JobsDetails extends Activity {
 
     private static String jobScript = "";
     private static boolean jobHasNoInterpreter = false;
-
-    private static ProgressDialog dialog;
-    private static Handler dialogHandler;
 
     private static String NOT_DEFINED = "(not defined)\n";
 
@@ -389,37 +382,4 @@ public class JobsDetails extends Activity {
         return text;
     }
 
-    private void showSimpleErrorDialog(String message) {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setMessage(message);
-        alertDialog.setTitle(R.string.error);
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.ok), (Message) null);
-        alertDialog.show();
-    }
-
-    private void showLoading() {
-        hideLoading();
-        dialog = new ProgressDialog(JobsDetails.this);
-        dialog.setMessage(getString(R.string.loading));
-        dialog.setCancelable(false);
-        if (dialogHandler == null) {
-            dialogHandler = new Handler();
-        }
-        dialogHandler.postDelayed(new Runnable() {
-            public void run() {
-                if (dialog != null) dialog.show();
-            }
-        }, 600);
-    }
-
-    private void hideLoading() {
-        if (dialogHandler != null) {
-            dialogHandler.removeCallbacksAndMessages(null);
-            dialogHandler = null;
-        }
-        if (dialog != null) {
-            dialog.dismiss();
-            dialog = null;
-        }
-    }
 }
