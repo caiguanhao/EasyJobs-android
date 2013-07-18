@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -19,10 +20,15 @@ import com.loopj.android.http.RequestParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 public class JobsDetails extends Activity {
 
@@ -102,7 +108,11 @@ public class JobsDetails extends Activity {
                         for (int i = 0; i < Keys.length; i++) {
                             Map<String, Object> map = new HashMap<String, Object>();
                             map.put("KEY", Names[i]);
-                            map.put("VALUE", job.getString(Keys[i]));
+                            if (Keys[i].matches(".*at")) {
+                                map.put("VALUE", toRelativeDateTime(job.getString(Keys[i])));
+                            } else {
+                                map.put("VALUE", job.getString(Keys[i]));
+                            }
                             data.add(map);
                         }
 
@@ -141,7 +151,11 @@ public class JobsDetails extends Activity {
                             for (int i = 0; i < Keys.length; i++) {
                                 Map<String, Object> map = new HashMap<String, Object>();
                                 map.put("KEY", Names[i]);
-                                map.put("VALUE", server.getString(Keys[i]));
+                                if (Keys[i].matches(".*at")) {
+                                    map.put("VALUE", toRelativeDateTime(server.getString(Keys[i])));
+                                } else {
+                                    map.put("VALUE", server.getString(Keys[i]));
+                                }
                                 data.add(map);
                             }
                         }
@@ -229,6 +243,18 @@ public class JobsDetails extends Activity {
             intent.putExtra("URL", url);
             JobsDetails.this.startActivity(intent);
         }
+    }
+
+    private String toRelativeDateTime(String text) {
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        format.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            text = String.valueOf(DateUtils.getRelativeTimeSpanString(
+                    format.parse(text).getTime(), (new Date()).getTime(), 0));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return text;
     }
 
     private void showSimpleErrorDialog(String message) {
