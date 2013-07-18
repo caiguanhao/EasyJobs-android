@@ -24,12 +24,16 @@
             </intent-filter>
         </activity>
         <activity
-                android:name="com.cghio.easyjobs.JobsDetails"
-                android:label="Job Details" >
+            android:name="com.cghio.easyjobs.JobsDetails"
+            android:label="Job Details" >
         </activity>
         <activity
-                android:name="com.cghio.easyjobs.RunJob"
-                android:label="Running Job" >
+            android:name="com.cghio.easyjobs.RunJob"
+            android:label="Running Job" >
+        </activity>
+        <activity
+            android:name="com.cghio.easyjobs.Parameters"
+            android:label="Parameters" >
         </activity>
     </application>
 

@@ -23,6 +23,8 @@ import com.loopj.android.http.RequestParams;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -32,6 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class JobsDetails extends Activity {
 
@@ -40,8 +44,15 @@ public class JobsDetails extends Activity {
     private static String JOBS_SHOW_URL = "";
     private static String JOBS_RUN_URL = "";
 
+    private static String JOBS_PARAMETERS_INDEX_URL = "";
+
+    private static String jobScript = "";
+    private static boolean jobHasNoInterpreter = false;
+
     private static ProgressDialog dialog;
     private static Handler dialogHandler;
+
+    private static String NOT_DEFINED = "(not defined)\n";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +68,9 @@ public class JobsDetails extends Activity {
             }
             if (extras.containsKey("JOBS_RUN_URL")) {
                 JOBS_RUN_URL = extras.getString("JOBS_RUN_URL");
+            }
+            if (extras.containsKey("JOBS_PARAMETERS_INDEX_URL")) {
+                JOBS_PARAMETERS_INDEX_URL = extras.getString("JOBS_PARAMETERS_INDEX_URL");
             }
             if (extras.containsKey("JOB_ID")) {
                 JOBS_DETAILS_ID = extras.getInt("JOB_ID");
@@ -143,6 +157,8 @@ public class JobsDetails extends Activity {
                             data.add(map);
                         }
 
+                        jobScript = job.getString("script");
+
                         JSONObject interpreter = obj.optJSONObject("interpreter");
 
                         if (interpreter == null) {
@@ -150,6 +166,8 @@ public class JobsDetails extends Activity {
                             map.put("KEY", "Interpreter");
                             map.put("VALUE", "(default)");
                             data.add(map);
+
+                            jobHasNoInterpreter = true;
                         } else {
                             Keys = new String[]{"path", "upload_script_first"};
                             Names = new String[]{"Interpreter", "Upload script first?"};
@@ -187,6 +205,18 @@ public class JobsDetails extends Activity {
                             }
                         }
 
+                        if (jobHasNoInterpreter) {
+                            Pattern replace = Pattern.compile("[^\\%]?\\%\\{(.*?)\\}");
+                            Matcher matcher = replace.matcher(jobScript);
+                            while (matcher.find()) {
+                                Map<String, Object> map = new HashMap<String, Object>();
+                                map.put("PARAM", matcher.group(1));
+                                map.put("KEY", "Variable: " + matcher.group(1));
+                                map.put("VALUE", NOT_DEFINED);
+                                data.add(map);
+                            }
+                        }
+
                         String hash = obj.optString("hash", "");
 
                         if (hash.length() == 0) {
@@ -210,11 +240,14 @@ public class JobsDetails extends Activity {
                         listview_jobs_details.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                             @Override
                             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                if (i == adapterView.getCount() - 1) {
-                                    Object item = adapterView.getAdapter().getItem(i);
-                                    if (item instanceof Map) {
+                                Object item = adapterView.getAdapter().getItem(i);
+                                if (item instanceof Map) {
+                                    if (((Map) item).containsKey("HASH")) {
                                         String hash = ((Map) item).get("HASH").toString();
                                         toRunJob(hash);
+                                    }
+                                    if (((Map) item).containsKey("PARAM")) {
+                                        showParams(((Map) item).get("PARAM").toString());
                                     }
                                 }
                             }
@@ -265,10 +298,79 @@ public class JobsDetails extends Activity {
         if (hash.length() > 0) {
             url = url + "?hash=" + hash;
             url = url + "&token=" + API_TOKEN;
-
+            String params = collectParams();
+            if (params.length() > 0) url += params;
             Intent intent = new Intent(JobsDetails.this, RunJob.class);
             intent.putExtra("URL", url);
             JobsDetails.this.startActivity(intent);
+        }
+    }
+
+    private String collectParams() {
+        String params = "";
+        ListView listview_jobs_details =
+                (ListView) findViewById(R.id.listview_jobs_details);
+        JobsDetailsAdapter adapter = (JobsDetailsAdapter) listview_jobs_details.getAdapter();
+        if (adapter != null) {
+            for (int i = 0; i < adapter.getCount(); i++) {
+                Object item = adapter.getItem(i);
+                if (item != null) {
+                    Map map_item = (Map) item;
+                    if (map_item.containsKey("PARAM") && map_item.containsKey("VALUE")) {
+                        if (!map_item.get("VALUE").toString().equals(NOT_DEFINED)) {
+                            try {
+                                params += "&parameters[" + map_item.get("PARAM").toString() + "]=" +
+                                        URLEncoder.encode(map_item.get("VALUE").toString(), "utf-8");
+                            } catch (UnsupportedEncodingException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return params;
+    }
+
+    private void showParams(String param) {
+        Intent intent = new Intent(JobsDetails.this, Parameters.class);
+        intent.putExtra("JOBS_PARAMETERS_INDEX_URL", JOBS_PARAMETERS_INDEX_URL);
+        intent.putExtra("API_TOKEN", API_TOKEN);
+        intent.putExtra("PARAM", param);
+        JobsDetails.this.startActivityForResult(intent, 1);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                String key = "";
+                String value = "";
+                if (data != null) {
+                    Bundle extra = data.getExtras();
+                    if (extra != null) {
+                        key = extra.getString("key");
+                        value = extra.getString("value");
+                    }
+                }
+                if (key == null || key.length() == 0) return;
+                if (value == null || value.length() == 0) value = NOT_DEFINED;
+                ListView listview_jobs_details =
+                        (ListView) findViewById(R.id.listview_jobs_details);
+                JobsDetailsAdapter adapter = (JobsDetailsAdapter) listview_jobs_details.getAdapter();
+                if (adapter != null) {
+                    for (int i = 0; i < adapter.getCount(); i++) {
+                        if (adapter.getItem(i) != null) {
+                            Map<String, Object> map_item = adapter.getItem(i);
+                            if (map_item.containsKey("PARAM") &&
+                                    map_item.get("PARAM").toString().equals(key)) {
+                                map_item.put("VALUE", value);
+                            }
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+            }
         }
     }
 

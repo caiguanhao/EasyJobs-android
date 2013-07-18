@@ -49,9 +49,8 @@ public class Jobs extends Activity {
     private static String JOBS_INDEX_URL = "";
 
     private static String JOBS_SHOW_URL = "";
-
     private static String JOBS_RUN_URL = "";
-
+    private static String JOBS_PARAMETERS_INDEX_URL = "";
     private static String REVOKE_TOKEN_URL = "";
 
     private static ProgressDialog dialog;
@@ -166,6 +165,10 @@ public class Jobs extends Activity {
                     JSONObject jobsRunObj = jobsObj.getJSONObject("run");
                     JOBS_RUN_URL = jobsRunObj.getString("url");
 
+                    JSONObject jobsParamsObj = helpObj.getJSONObject("job_parameters");
+                    JSONObject jobsParamsIndexObj = jobsParamsObj.getJSONObject("index");
+                    JOBS_PARAMETERS_INDEX_URL = jobsParamsIndexObj.getString("url");
+
                     JSONObject tokensObj = helpObj.getJSONObject("tokens");
                     JSONObject tokensRevokeObj = tokensObj.getJSONObject("revoke");
                     REVOKE_TOKEN_URL = tokensRevokeObj.getString("url");
@@ -244,6 +247,8 @@ public class Jobs extends Activity {
                                         intent.putExtra("JOB_ID", ID);
                                         intent.putExtra("JOBS_SHOW_URL", JOBS_SHOW_URL);
                                         intent.putExtra("JOBS_RUN_URL", JOBS_RUN_URL);
+                                        intent.putExtra("JOBS_PARAMETERS_INDEX_URL",
+                                                JOBS_PARAMETERS_INDEX_URL);
                                         Jobs.this.startActivity(intent);
                                     }
                                 }
