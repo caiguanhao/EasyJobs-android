@@ -172,6 +172,12 @@ public class JobsDetails extends EasyJobsBase {
                             }
                         }
 
+                        {
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            map.put("KEY", getString(R.string.server));
+                            data.add(map);
+                        }
+
                         JSONObject server = obj.optJSONObject("server");
 
                         if (server == null) {
@@ -193,6 +199,12 @@ public class JobsDetails extends EasyJobsBase {
                                 }
                                 data.add(map);
                             }
+                        }
+
+                        {
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            map.put("KEY", getString(R.string.run));
+                            data.add(map);
                         }
 
                         if (jobHasNoInterpreter) {
