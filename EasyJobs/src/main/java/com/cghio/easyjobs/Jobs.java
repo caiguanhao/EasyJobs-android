@@ -423,10 +423,10 @@ public class Jobs extends EasyJobsBase {
     private void revokeAccessOnly() {
         SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.remove(PREF_VERSION);
-        editor.remove(PREF_URL);
-        editor.remove(PREF_CONTENT);
+        editor.clear();
         editor.commit();
+
+        clearEtags();
 
         AsyncHttpClient client = new AsyncHttpClient();
         client.delete(REVOKE_TOKEN_URL + "?token=" + API_TOKEN, new AsyncHttpResponseHandler(){

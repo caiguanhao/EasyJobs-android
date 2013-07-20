@@ -66,6 +66,13 @@ public class EasyJobsBase extends Activity {
         editor.commit();
     }
 
+    protected void clearEtags() {
+        SharedPreferences eTags = getSharedPreferences(ETAG_FILE, 0);
+        SharedPreferences.Editor editor = eTags.edit();
+        editor.clear();
+        editor.commit();
+    }
+
     protected boolean isNotModified(Throwable e) {
         return e != null && e.getMessage() != null && e.getMessage().equals(NOT_MODIFIED);
     }
