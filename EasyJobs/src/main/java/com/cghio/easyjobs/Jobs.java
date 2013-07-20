@@ -20,6 +20,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -90,6 +91,7 @@ public class Jobs extends EasyJobsBase {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.reload:
+                removeEtagContent(JOBS_INDEX_URL);
                 startEasyJobs();
                 return true;
             default:
@@ -191,79 +193,93 @@ public class Jobs extends EasyJobsBase {
 
     private void getJobs() {
         if (JOBS_INDEX_VERB.length() == 0 || JOBS_INDEX_URL.length() == 0) return;
-        if (JOBS_INDEX_VERB.equals("get")) {
-            AsyncHttpClient client = new AsyncHttpClient();
-            RequestParams params = new RequestParams();
-            params.put("token", API_TOKEN);
-            client.setTimeout(TIMEOUT);
-            showLoading();
-            client.get(JOBS_INDEX_URL, params, new AsyncHttpResponseHandler() {
-                @Override
-                public void onFailure(Throwable e, String response) {
-                    hideLoading();
-                    if (e != null && e.getCause() != null) {
-                        showSimpleErrorDialog(e.getCause().getMessage());
-                    } else if (e != null && e.getCause() == null) {
-                        showSimpleErrorDialog(e.getMessage());
-                    } else {
-                        showSimpleErrorDialog(getString(R.string.error_connection_problem));
-                    }
-                    showReloadAndScanButton(true);
+
+        String cachedContent = getEtagContent(JOBS_INDEX_URL);
+        if (cachedContent.length() > 0) {
+            parseContent(cachedContent);
+        }
+
+        AsyncHttpClient client = new AsyncHttpClient();
+        RequestParams params = new RequestParams();
+        params.put("token", API_TOKEN);
+        client.setTimeout(TIMEOUT);
+        showLoading();
+
+        client.addHeader(IF_NONE_MATCH, getEtag(JOBS_INDEX_URL));
+
+        client.get(JOBS_INDEX_URL, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onFailure(Throwable e, String response) {
+                hideLoading();
+                if (isNotModified(e)) return;
+                if (e != null && e.getCause() != null) {
+                    showSimpleErrorDialog(e.getCause().getMessage());
+                } else if (e != null && e.getCause() == null) {
+                    showSimpleErrorDialog(e.getMessage());
+                } else {
+                    showSimpleErrorDialog(getString(R.string.error_connection_problem));
                 }
+                showReloadAndScanButton(true);
+            }
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, String content) {
+                hideLoading();
+                String etag = getHeader(headers, ETAG);
+                saveETagAndContent(JOBS_INDEX_URL, etag, content);
+                parseContent(content);
+            }
+        });
+    }
+
+    private void parseContent(String content) {
+        try {
+            List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+
+            JSONArray jobs = new JSONArray(content);
+            for (int i = 0; i < jobs.length(); i++) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("ID", jobs.getJSONObject(i).getInt("id"));
+                map.put("NAME", jobs.getJSONObject(i).getString("name"));
+                String server = jobs.getJSONObject(i).getString("server_name");
+                if (server.equals("null")) server = getString(R.string.no_server);
+                map.put("SERVER_NAME", server);
+                data.add(map);
+            }
+
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("NAME", getString(R.string.revoke_access));
+            map.put("SERVER_NAME", getString(R.string.revoke_access_desc));
+            data.add(map);
+
+            SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
+                    R.layout.listview_jobs_items, new String[]{"NAME", "SERVER_NAME"},
+                    new int[]{R.id.text_job_name, R.id.text_server_name});
+            ListView listview_jobs = (ListView) findViewById(R.id.listView_jobs);
+            listview_jobs.setAdapter(adapter);
+            listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
-                public void onSuccess(String response) {
-                    hideLoading();
-                    try {
-                        List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-
-                        JSONArray jobs = new JSONArray(response);
-                        for (int i = 0; i < jobs.length(); i++) {
-                            Map<String, Object> map = new HashMap<String, Object>();
-                            map.put("ID", jobs.getJSONObject(i).getInt("id"));
-                            map.put("NAME", jobs.getJSONObject(i).getString("name"));
-                            String server = jobs.getJSONObject(i).getString("server_name");
-                            if (server.equals("null")) server = getString(R.string.no_server);
-                            map.put("SERVER_NAME", server);
-                            data.add(map);
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    if (i == adapterView.getCount() - 1) {
+                        toRevokeAccess();
+                    } else {
+                        Object item = adapterView.getAdapter().getItem(i);
+                        if (item instanceof Map) {
+                            int ID = Integer.parseInt(((Map) item).get("ID").toString());
+                            Intent intent = new Intent(Jobs.this, JobsDetails.class);
+                            intent.putExtra("API_TOKEN", API_TOKEN);
+                            intent.putExtra("JOB_ID", ID);
+                            intent.putExtra("JOBS_SHOW_URL", JOBS_SHOW_URL);
+                            intent.putExtra("JOBS_RUN_URL", JOBS_RUN_URL);
+                            intent.putExtra("JOBS_PARAMETERS_INDEX_URL",
+                                    JOBS_PARAMETERS_INDEX_URL);
+                            Jobs.this.startActivity(intent);
                         }
-
-                        Map<String, Object> map = new HashMap<String, Object>();
-                        map.put("NAME", getString(R.string.revoke_access));
-                        map.put("SERVER_NAME", getString(R.string.revoke_access_desc));
-                        data.add(map);
-
-                        SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
-                                R.layout.listview_jobs_items, new String[]{"NAME", "SERVER_NAME"},
-                                new int[]{R.id.text_job_name, R.id.text_server_name});
-                        ListView listview_jobs = (ListView) findViewById(R.id.listView_jobs);
-                        listview_jobs.setAdapter(adapter);
-                        listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                                if (i == adapterView.getCount() - 1) {
-                                    toRevokeAccess();
-                                } else {
-                                    Object item = adapterView.getAdapter().getItem(i);
-                                    if (item instanceof Map) {
-                                        int ID = Integer.parseInt(((Map) item).get("ID").toString());
-                                        Intent intent = new Intent(Jobs.this, JobsDetails.class);
-                                        intent.putExtra("API_TOKEN", API_TOKEN);
-                                        intent.putExtra("JOB_ID", ID);
-                                        intent.putExtra("JOBS_SHOW_URL", JOBS_SHOW_URL);
-                                        intent.putExtra("JOBS_RUN_URL", JOBS_RUN_URL);
-                                        intent.putExtra("JOBS_PARAMETERS_INDEX_URL",
-                                                JOBS_PARAMETERS_INDEX_URL);
-                                        Jobs.this.startActivity(intent);
-                                    }
-                                }
-                            }
-                        });
-                    } catch (JSONException e) {
-                        showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
-                        showReloadAndScanButton(true);
                     }
                 }
             });
+        } catch (JSONException e) {
+            showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
+            showReloadAndScanButton(true);
         }
     }
 

@@ -57,6 +57,15 @@ public class EasyJobsBase extends Activity {
         return content;
     }
 
+    protected void removeEtagContent(String url) {
+        String key = Base64.encodeToString(url.getBytes(), Base64.NO_WRAP);
+        SharedPreferences eTags = getSharedPreferences(ETAG_FILE, 0);
+        SharedPreferences.Editor editor = eTags.edit();
+        editor.remove(key.toLowerCase());
+        editor.remove(key.toUpperCase());
+        editor.commit();
+    }
+
     protected boolean isNotModified(Throwable e) {
         return e != null && e.getMessage() != null && e.getMessage().equals(NOT_MODIFIED);
     }
