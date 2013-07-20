@@ -157,7 +157,7 @@ public class Jobs extends EasyJobsBase {
                 showReloadAndScanButton(true);
             }
             @Override
-            public void onSuccess(final String response) {
+            public void onSuccess(String response) {
                 hideLoading();
                 try {
                     JSONObject helpObj = new JSONObject(response);
@@ -348,7 +348,7 @@ public class Jobs extends EasyJobsBase {
     private void decode(String content) {
         String decoded_content = null;
         try {
-            byte[] decoded = Base64.decode(content, Base64.DEFAULT);
+            byte[] decoded = Base64.decode(content, Base64.NO_WRAP);
             decoded_content = new String(decoded);
         } catch (IllegalArgumentException e) {
             showSimpleErrorDialog(getString(R.string.error_invalid_qrcode));

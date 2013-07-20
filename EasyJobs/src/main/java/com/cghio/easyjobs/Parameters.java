@@ -15,6 +15,7 @@ import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -80,6 +81,11 @@ public class Parameters extends EasyJobsBase {
         initAdapter();
         setAdapter();
 
+        String cachedContent = getEtagContent(JOBS_PARAMETERS_INDEX_URL);
+        if (cachedContent.length() > 0) {
+            parseContent(cachedContent);
+        }
+
         if (JOBS_PARAMETERS_INDEX_URL.length() == 0 || PARAM.length() == 0) return;
 
         RequestParams params = new RequestParams();
@@ -87,6 +93,7 @@ public class Parameters extends EasyJobsBase {
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(TIMEOUT);
         showLoading();
+        client.addHeader(IF_NONE_MATCH, getEtag(JOBS_PARAMETERS_INDEX_URL));
         client.get(JOBS_PARAMETERS_INDEX_URL, params, new AsyncHttpResponseHandler() {
             @Override
             public void onFinish() {
@@ -94,6 +101,7 @@ public class Parameters extends EasyJobsBase {
             }
             @Override
             public void onFailure(Throwable e, String response) {
+                if (isNotModified(e)) return;
                 if (e != null && e.getCause() != null) {
                     showSimpleErrorDialog(e.getCause().getMessage());
                 } else if (e != null && e.getCause() == null) {
@@ -104,43 +112,50 @@ public class Parameters extends EasyJobsBase {
                 showReloadButton();
             }
             @Override
-            public void onSuccess(String response) {
-                try {
-                    if (data == null) initAdapter();
-
-                    JSONObject job_parameters = new JSONObject(response);
-                    if (job_parameters.has(PARAM)) {
-                        JSONArray params = job_parameters.getJSONArray(PARAM);
-                        for (int i = 0; i < params.length(); i++) {
-                            Map<String, Object> map = new HashMap<String, Object>();
-                            map.put("V", params.getString(i));
-                            data.add(map);
-                        }
-                    }
-
-                    ListView listview_job_parameters =
-                            (ListView) findViewById(R.id.listview_job_parameters);
-                    listview_job_parameters.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                        @Override
-                        public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                            if (i == 0) {
-                                showCustomInput();
-                            } else {
-                                Object item = adapterView.getAdapter().getItem(i);
-                                if (item instanceof Map) {
-                                    sendBackData(((Map) item).get("V").toString());
-                                }
-                            }
-                        }
-                    });
-
-                    setAdapter();
-                } catch (JSONException e) {
-                    showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
-                    showReloadButton();
-                }
+            public void onSuccess(int statusCode, Header[] headers, String content) {
+                String etag = getHeader(headers, ETAG);
+                saveETagAndContent(JOBS_PARAMETERS_INDEX_URL, etag, content);
+                parseContent(content);
             }
         });
+    }
+
+    private void parseContent(String content) {
+        try {
+            // if data is null or data has more than one item (meaning list loaded before)
+            if (data == null || data.size() > 1) initAdapter();
+
+            JSONObject job_parameters = new JSONObject(content);
+            if (job_parameters.has(PARAM)) {
+                JSONArray params = job_parameters.getJSONArray(PARAM);
+                for (int i = 0; i < params.length(); i++) {
+                    Map<String, Object> map = new HashMap<String, Object>();
+                    map.put("V", params.getString(i));
+                    data.add(map);
+                }
+            }
+
+            ListView listview_job_parameters =
+                    (ListView) findViewById(R.id.listview_job_parameters);
+            listview_job_parameters.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    if (i == 0) {
+                        showCustomInput();
+                    } else {
+                        Object item = adapterView.getAdapter().getItem(i);
+                        if (item instanceof Map) {
+                            sendBackData(((Map) item).get("V").toString());
+                        }
+                    }
+                }
+            });
+
+            setAdapter();
+        } catch (JSONException e) {
+            showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
+            showReloadButton();
+        }
     }
 
     private void sendBackData(String data) {
