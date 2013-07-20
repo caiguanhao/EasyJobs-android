@@ -1,8 +1,10 @@
 package com.cghio.easyjobs;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
@@ -112,6 +114,22 @@ public class EasyJobsBase extends Activity {
         if (dialog != null) {
             dialog.dismiss();
             dialog = null;
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    @SuppressLint("NewApi")
+    protected void copyText(String text) {
+        int sdk = android.os.Build.VERSION.SDK_INT;
+        if(sdk < android.os.Build.VERSION_CODES.HONEYCOMB) {
+            android.text.ClipboardManager clipboard = (android.text.ClipboardManager)
+                    getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText(text);
+        } else {
+            android.content.ClipboardManager clipboard = (android.content.ClipboardManager)
+                    getSystemService(Context.CLIPBOARD_SERVICE);
+            android.content.ClipData clip = android.content.ClipData.newPlainText(text, text);
+            clipboard.setPrimaryClip(clip);
         }
     }
 

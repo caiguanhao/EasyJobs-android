@@ -17,6 +17,8 @@
     <string name="error_need_refresh">你需要重新载入EasyJobs网页，再重新扫描QR码。</string>
     <string name="error_connecting">连接服务器时发生错误。</string>
 
+    <string name="string_copied">文本已复制到剪贴板。</string>
+
     <string name="confirm_revoke_access">你确定要撤销访问？</string>
     <string name="confirm_run_job">你确定要运行这个任务吗？</string>
 

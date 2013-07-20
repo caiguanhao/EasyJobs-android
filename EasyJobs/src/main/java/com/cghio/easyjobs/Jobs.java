@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
@@ -275,6 +276,20 @@ public class Jobs extends EasyJobsBase {
                             Jobs.this.startActivity(intent);
                         }
                     }
+                }
+            });
+            listview_jobs.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Object item = adapterView.getAdapter().getItem(i);
+                    if (item instanceof Map) {
+                        if (((Map) item).containsKey("NAME")) {
+                            copyText(((Map) item).get("NAME").toString());
+                            Toast.makeText(Jobs.this, R.string.string_copied, Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
+                    }
+                    return false;
                 }
             });
         } catch (JSONException e) {

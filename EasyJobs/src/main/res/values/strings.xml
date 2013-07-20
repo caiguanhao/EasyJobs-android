@@ -20,6 +20,8 @@
         QR code.</string>
     <string name="error_connecting">Error connecting to server.</string>
 
+    <string name="string_copied">Text has been copied to clipboard.</string>
+
     <string name="confirm_revoke_access">Are you sure you want to revoke access?</string>
     <string name="confirm_run_job">Are you sure you want to run this job?</string>
 
