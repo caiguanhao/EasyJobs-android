@@ -5,6 +5,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -56,7 +59,25 @@ public class Parameters extends EasyJobsBase {
                 DEFAULT = extras.getString("DEFAULT");
             }
         }
-        getParams();
+        getParams(false);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.reload_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.reload:
+                getParams(true);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void initAdapter() {
@@ -77,7 +98,7 @@ public class Parameters extends EasyJobsBase {
         adapter.notifyDataSetChanged();
     }
 
-    private void getParams() {
+    private void getParams(boolean forceUpdate) {
         initAdapter();
         setAdapter();
 
@@ -93,7 +114,10 @@ public class Parameters extends EasyJobsBase {
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(TIMEOUT);
         showLoading();
-        client.addHeader(IF_NONE_MATCH, getEtag(JOBS_PARAMETERS_INDEX_URL));
+
+        if (!forceUpdate)
+            client.addHeader(IF_NONE_MATCH, getEtag(JOBS_PARAMETERS_INDEX_URL));
+
         client.get(JOBS_PARAMETERS_INDEX_URL, params, new AsyncHttpResponseHandler() {
             @Override
             public void onFinish() {
@@ -200,7 +224,7 @@ public class Parameters extends EasyJobsBase {
         listview_job_parameters.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                getParams();
+                getParams(true);
             }
         });
     }
