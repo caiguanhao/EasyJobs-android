@@ -55,7 +55,11 @@ public class Jobs extends EasyJobsBase {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jobs);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
         String fromURI = null;
         Intent intent = getIntent();
         if (intent != null) {
