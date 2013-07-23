@@ -165,6 +165,7 @@ public class Jobs extends EasyJobsBase {
             }
             @Override
             public void onSuccess(String response) {
+                updateTitle();
                 hideLoading();
                 try {
                     JSONObject helpObj = new JSONObject(response);
@@ -457,7 +458,33 @@ public class Jobs extends EasyJobsBase {
 
     private void revokeAccess() {
         revokeAccessOnly();
+        setAllVariablesToEmpty();
+        updateTitle();
         startEasyJobs();
+    }
+
+    private void setAllVariablesToEmpty() {
+        API_HELP_URL = "";
+        API_TOKEN = "";
+        JOBS_INDEX_VERB = "";
+        JOBS_INDEX_URL = "";
+        JOBS_SHOW_URL = "";
+        JOBS_RUN_URL = "";
+        JOBS_PARAMETERS_INDEX_URL = "";
+        REVOKE_TOKEN_URL = "";
+    }
+
+    private void updateTitle() {
+        if (API_HELP_URL.length() > 0) {
+            Uri uri = Uri.parse(API_HELP_URL);
+            String host = uri.getHost();
+            if (uri.getPort() > 0 && uri.getPort() != 80) {
+                host += ":" + uri.getPort();
+            }
+            setTitle(getString(R.string.app_name) + " - " + host);
+        } else {
+            setTitle(getString(R.string.app_name));
+        }
     }
 
 }
