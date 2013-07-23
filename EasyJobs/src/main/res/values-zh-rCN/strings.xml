@@ -31,6 +31,13 @@
     <string name="scan">扫描QR码</string>
     <string name="scan_desc">访问EasyJobs网页，扫描位于设置页的QR码。</string>
 
+    <string name="about">关于</string>
+    <string name="about_desc">查看此应用的关于信息。</string>
+    <string name="about_info">此 Android 应用是 caiguanhao 用 Android Studio 创建的。
+        \n\n详细信息请前往在 GitHub 上的项目主页。
+        \n\n\u00A9 2013 Choi Goonho (caiguanhao)</string>
+    <string name="about_visit_homepage">访问主页</string>
+
     <string name="na">N/A</string>
 
     <string name="loading">载入中...</string>
@@ -40,6 +47,7 @@
     <string name="ok">OK</string>
     <string name="yes">是</string>
     <string name="no">否</string>
+    <string name="close">关闭</string>
 
     <string-array name="jobs_keys">
         <item>name</item>

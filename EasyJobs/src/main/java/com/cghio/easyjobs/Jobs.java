@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Message;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -161,7 +162,7 @@ public class Jobs extends EasyJobsBase {
                     error += "\n\n" + getString(R.string.error_need_refresh);
                 }
                 showSimpleErrorDialog(error);
-                showReloadAndScanButton(true);
+                showReloadAndScanButton();
             }
             @Override
             public void onSuccess(String response) {
@@ -191,7 +192,7 @@ public class Jobs extends EasyJobsBase {
                     getJobs();
                 } catch (JSONException e) {
                     showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
-                    showReloadAndScanButton(true);
+                    showReloadAndScanButton();
                 }
             }
         });
@@ -225,7 +226,7 @@ public class Jobs extends EasyJobsBase {
                 } else {
                     showSimpleErrorDialog(getString(R.string.error_connection_problem));
                 }
-                showReloadAndScanButton(true);
+                showReloadAndScanButton();
             }
             @Override
             public void onSuccess(int statusCode, Header[] headers, String content) {
@@ -299,25 +300,47 @@ public class Jobs extends EasyJobsBase {
             });
         } catch (JSONException e) {
             showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
-            showReloadAndScanButton(true);
+            showReloadAndScanButton();
         }
     }
 
     private void showScanButton() {
-        showReloadAndScanButton(false);
-    }
-
-    private void showReloadAndScanButton(boolean withRetryButton) {
         List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
         Map<String, Object> map = new HashMap<String, Object>();
-        if (withRetryButton) {
-            map.put("T", 0);
-            map.put("K", getString(R.string.retry));
-            map.put("V", getString(R.string.retry_desc));
-            data.add(map);
-        }
+        map.put("K", getString(R.string.scan));
+        map.put("V", getString(R.string.scan_desc));
+        data.add(map);
         map = new HashMap<String, Object>();
-        map.put("T", 1);
+        map.put("K", getString(R.string.about));
+        map.put("V", getString(R.string.about_desc));
+        data.add(map);
+        SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
+                R.layout.listview_jobs_items, new String[]{"K", "V"},
+                new int[]{R.id.text_job_name, R.id.text_server_name});
+        ListView listview_jobs = (ListView) findViewById(R.id.listView_jobs);
+        listview_jobs.setAdapter(adapter);
+        listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                switch (i) {
+                    case 0:
+                        openScanner();
+                        break;
+                    case 1:
+                        showAboutInfo();
+                        break;
+                }
+            }
+        });
+    }
+
+    private void showReloadAndScanButton() {
+        List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("K", getString(R.string.retry));
+        map.put("V", getString(R.string.retry_desc));
+        data.add(map);
+        map = new HashMap<String, Object>();
         map.put("K", getString(R.string.scan));
         map.put("V", getString(R.string.scan_desc));
         data.add(map);
@@ -329,16 +352,13 @@ public class Jobs extends EasyJobsBase {
         listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Object item = adapterView.getAdapter().getItem(i);
-                if (item instanceof Map) {
-                    switch (Integer.parseInt(((Map) item).get("T").toString())) {
-                        case 0:
-                            startEasyJobs();
-                            break;
-                        case 1:
-                            openScanner();
-                            break;
-                    }
+                switch (i) {
+                    case 0:
+                        startEasyJobs();
+                        break;
+                    case 1:
+                        openScanner();
+                        break;
                 }
             }
         });
@@ -449,7 +469,7 @@ public class Jobs extends EasyJobsBase {
         clearEtags();
 
         AsyncHttpClient client = new AsyncHttpClient();
-        client.delete(REVOKE_TOKEN_URL + "?token=" + API_TOKEN, new AsyncHttpResponseHandler(){
+        client.delete(REVOKE_TOKEN_URL + "?token=" + API_TOKEN, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(String response) {
             }
@@ -485,6 +505,23 @@ public class Jobs extends EasyJobsBase {
         } else {
             setTitle(getString(R.string.app_name));
         }
+    }
+
+    private void showAboutInfo() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setMessage(getString(R.string.about_info));
+        alertDialog.setTitle(R.string.about);
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.about_visit_homepage),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/qnn/EasyJobs-android"));
+                        startActivity(intent);
+                    }
+        });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.close), (Message) null);
+        alertDialog.show();
     }
 
 }
