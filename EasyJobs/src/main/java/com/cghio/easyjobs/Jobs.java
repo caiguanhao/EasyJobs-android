@@ -52,31 +52,34 @@ public class Jobs extends EasyJobsBase {
     private static String JOBS_PARAMETERS_INDEX_URL = "";
     private static String REVOKE_TOKEN_URL = "";
 
+    private static boolean launched = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jobs);
+
+        startEasyJobs();
+
+        if (!launched) { // first time launch from link
+            onNewIntent(getIntent());
+        }
+        launched = true;
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
         String fromURI = null;
-        Intent intent = getIntent();
         if (intent != null) {
-            Uri data = getIntent().getData();
+            Uri data = intent.getData();
             if (data != null) {
                 fromURI = data.getSchemeSpecificPart();
             }
         }
 
         if (fromURI != null) {
-            if (readPrefs()) {
-                revokeAccessOnly();
-            }
             decode(fromURI.substring(2));
-        } else {
-            startEasyJobs();
         }
     }
 
