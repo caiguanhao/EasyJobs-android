@@ -347,6 +347,10 @@ public class Jobs extends EasyJobsBase {
         map.put("K", getString(R.string.scan));
         map.put("V", getString(R.string.scan_desc));
         data.add(map);
+        map = new HashMap<String, Object>();
+        map.put("K", getString(R.string.revoke_access));
+        map.put("V", getString(R.string.revoke_access_desc));
+        data.add(map);
         SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
                 R.layout.listview_jobs_items, new String[]{"K", "V"},
                 new int[]{R.id.text_job_name, R.id.text_server_name});
@@ -361,6 +365,9 @@ public class Jobs extends EasyJobsBase {
                         break;
                     case 1:
                         openScanner();
+                        break;
+                    case 2:
+                        toRevokeAccess();
                         break;
                 }
             }
