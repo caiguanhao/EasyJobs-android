@@ -5,10 +5,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Base64;
+import android.view.MenuItem;
 
 import org.apache.http.Header;
 
@@ -131,6 +135,34 @@ public class EasyJobsBase extends Activity {
             android.content.ClipData clip = android.content.ClipData.newPlainText(text, text);
             clipboard.setPrimaryClip(clip);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.about:
+                showAboutInfo();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    protected void showAboutInfo() {
+        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+        alertDialog.setMessage(getString(R.string.about_info));
+        alertDialog.setTitle(R.string.about);
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.about_visit_homepage),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("https://github.com/qnn/EasyJobs-android"));
+                        startActivity(intent);
+                    }
+                });
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.close), (Message) null);
+        alertDialog.show();
     }
 
 }

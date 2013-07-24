@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Message;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -515,23 +514,6 @@ public class Jobs extends EasyJobsBase {
         } else {
             setTitle(getString(R.string.app_name));
         }
-    }
-
-    private void showAboutInfo() {
-        AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-        alertDialog.setMessage(getString(R.string.about_info));
-        alertDialog.setTitle(R.string.about);
-        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.about_visit_homepage),
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Intent intent = new Intent(Intent.ACTION_VIEW,
-                                Uri.parse("https://github.com/qnn/EasyJobs-android"));
-                        startActivity(intent);
-                    }
-        });
-        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.close), (Message) null);
-        alertDialog.show();
     }
 
 }
