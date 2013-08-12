@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
@@ -155,9 +157,22 @@ public class EasyJobsBase extends Activity {
     }
 
     protected void showAboutInfo() {
+        String version = "";
+        try {
+            PackageManager manager = getPackageManager();
+            String name = getPackageName();
+            if (manager != null && name != null) {
+                PackageInfo info = manager.getPackageInfo(name, 0);
+                if (info != null) {
+                    version = " v" + info.versionName;
+                }
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
         AlertDialog alertDialog = new AlertDialog.Builder(this).create();
         alertDialog.setMessage(getString(R.string.about_info));
-        alertDialog.setTitle(R.string.about);
+        alertDialog.setTitle(getString(R.string.about) + " " + getString(R.string.app_name) + version);
         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.about_visit_homepage),
                 new DialogInterface.OnClickListener() {
                     @Override
