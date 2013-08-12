@@ -29,6 +29,12 @@ public class EasyJobsBase extends Activity {
     private static String ETAG_FILE = "etags";
     private static String NOT_MODIFIED = "Not Modified";
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        hideLoading();
+    }
+
     protected String getHeader(Header[] headers, String key) {
         for (Header header : headers) {
             if (header.getName().equals(key)) {
