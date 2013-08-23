@@ -24,6 +24,12 @@
 
     <string name="confirm_revoke_access">Are you sure you want to revoke access?</string>
     <string name="confirm_run_job">Are you sure you want to run this job?</string>
+    <string name="confirm_browse_webpage">Hint: Access credentials on this phone will be revoked
+        once you open EasyJobs web page in your browser.</string>
+
+    <string name="browse_web_page">Browse Web Page</string>
+    <string name="browse_web_page_desc">Open EasyJobs in your browser, so you can create, edit or
+        delete jobs.</string>
 
     <string name="revoke_access">Revoke Access</string>
     <string name="revoke_access_desc">Remove access credentials on your phone and renew token on

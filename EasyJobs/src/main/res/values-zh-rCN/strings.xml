@@ -21,6 +21,10 @@
 
     <string name="confirm_revoke_access">你确定要撤销访问？</string>
     <string name="confirm_run_job">你确定要运行这个任务吗？</string>
+    <string name="confirm_browse_webpage">提示：在浏览器打开EasyJobs网页后，手机上的访问将自动撤销。</string>
+
+    <string name="browse_web_page">访问网页版</string>
+    <string name="browse_web_page_desc">在浏览器中打开EasyJobs网页。网页版可创建、编辑或删除任务。</string>
 
     <string name="revoke_access">撤销访问</string>
     <string name="revoke_access_desc">撤销手机访问并更新服务器上的验证信息。</string>

@@ -49,6 +49,7 @@ public class Jobs extends EasyJobsBase {
     private static String JOBS_SHOW_URL = "";
     private static String JOBS_RUN_URL = "";
     private static String JOBS_PARAMETERS_INDEX_URL = "";
+    private static String TOKEN_LOGIN_URL = "";
     private static String REVOKE_TOKEN_URL = "";
 
     private static boolean launched = false;
@@ -185,6 +186,9 @@ public class Jobs extends EasyJobsBase {
                     JSONObject tokensRevokeObj = tokensObj.getJSONObject("revoke");
                     REVOKE_TOKEN_URL = tokensRevokeObj.getString("url");
 
+                    JSONObject tokensLoginObj = tokensObj.getJSONObject("login");
+                    TOKEN_LOGIN_URL = tokensLoginObj.getString("url");
+
                     getJobs();
                 } catch (JSONException e) {
                     showSimpleErrorDialog(getString(R.string.error_should_update_easyjobs));
@@ -249,10 +253,15 @@ public class Jobs extends EasyJobsBase {
                 data.add(map);
             }
 
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("NAME", getString(R.string.revoke_access));
-            map.put("SERVER_NAME", getString(R.string.revoke_access_desc));
-            data.add(map);
+            int[] other_buttons_text = {R.string.browse_web_page, R.string.revoke_access};
+            int[] other_buttons_desc = {R.string.browse_web_page_desc, R.string.revoke_access_desc};
+
+            for (int i = 0; i < other_buttons_text.length; i++) {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("NAME", getString(other_buttons_text[i]));
+                map.put("SERVER_NAME", getString(other_buttons_desc[i]));
+                data.add(map);
+            }
 
             SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
                     R.layout.listview_jobs_items, new String[]{"NAME", "SERVER_NAME"},
@@ -262,21 +271,26 @@ public class Jobs extends EasyJobsBase {
             listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                    if (i == adapterView.getCount() - 1) {
-                        toRevokeAccess();
-                    } else {
-                        Object item = adapterView.getAdapter().getItem(i);
-                        if (item instanceof Map) {
-                            int ID = Integer.parseInt(((Map) item).get("ID").toString());
-                            Intent intent = new Intent(Jobs.this, JobsDetails.class);
-                            intent.putExtra("API_TOKEN", API_TOKEN);
-                            intent.putExtra("JOB_ID", ID);
-                            intent.putExtra("JOBS_SHOW_URL", JOBS_SHOW_URL);
-                            intent.putExtra("JOBS_RUN_URL", JOBS_RUN_URL);
-                            intent.putExtra("JOBS_PARAMETERS_INDEX_URL",
-                                    JOBS_PARAMETERS_INDEX_URL);
-                            Jobs.this.startActivity(intent);
-                        }
+                    switch (i - adapterView.getCount()) {
+                        case -1:
+                            toRevokeAccess();
+                            break;
+                        case -2:
+                            toBrowseWebPage();
+                            break;
+                        default:
+                            Object item = adapterView.getAdapter().getItem(i);
+                            if (item instanceof Map) {
+                                int ID = Integer.parseInt(((Map) item).get("ID").toString());
+                                Intent intent = new Intent(Jobs.this, JobsDetails.class);
+                                intent.putExtra("API_TOKEN", API_TOKEN);
+                                intent.putExtra("JOB_ID", ID);
+                                intent.putExtra("JOBS_SHOW_URL", JOBS_SHOW_URL);
+                                intent.putExtra("JOBS_RUN_URL", JOBS_RUN_URL);
+                                intent.putExtra("JOBS_PARAMETERS_INDEX_URL",
+                                        JOBS_PARAMETERS_INDEX_URL);
+                                Jobs.this.startActivity(intent);
+                            }
                     }
                 }
             });
@@ -452,6 +466,19 @@ public class Jobs extends EasyJobsBase {
         }
     }
 
+    private void toBrowseWebPage() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.confirm_browse_webpage).setPositiveButton(R.string.yes,
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW,
+                                Uri.parse(TOKEN_LOGIN_URL.replace(":token", API_TOKEN)));
+                        startActivity(intent);
+                    }
+                }).setNegativeButton(R.string.no, null).show();
+    }
+
     private void toRevokeAccess() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.confirm_revoke_access).setPositiveButton(R.string.yes,
@@ -495,6 +522,7 @@ public class Jobs extends EasyJobsBase {
         JOBS_RUN_URL = "";
         JOBS_PARAMETERS_INDEX_URL = "";
         REVOKE_TOKEN_URL = "";
+        TOKEN_LOGIN_URL = "";
     }
 
     private void updateTitle() {
