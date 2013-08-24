@@ -233,7 +233,7 @@ public class Parameters extends EasyJobsBase {
         data.add(map);
         SimpleAdapter adapter = new SimpleAdapter(Parameters.this, data,
                 R.layout.listview_jobs_items, new String[]{"K", "V"},
-                new int[]{R.id.text_job_name, R.id.text_server_name});
+                new int[]{R.id.text_key, R.id.text_value});
         ListView listview_job_parameters = (ListView) findViewById(R.id.listview_job_parameters);
         listview_job_parameters.setAdapter(adapter);
         listview_job_parameters.setOnItemClickListener(new AdapterView.OnItemClickListener() {

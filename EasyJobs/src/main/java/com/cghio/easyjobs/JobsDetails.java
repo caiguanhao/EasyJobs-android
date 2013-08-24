@@ -234,7 +234,7 @@ public class JobsDetails extends EasyJobsBase {
                             data.add(map);
                         }
 
-                        JobsDetailsAdapter adapter = new JobsDetailsAdapter(JobsDetails.this,
+                        EasyJobsAdapter adapter = new EasyJobsAdapter(JobsDetails.this,
                                 R.layout.listview_jobs_details_items, data);
                         ListView listview_jobs_details =
                                 (ListView) findViewById(R.id.listview_jobs_details);
@@ -285,7 +285,7 @@ public class JobsDetails extends EasyJobsBase {
         map.put("KEY", getString(R.string.error_connecting));
         map.put("VALUE", getString(R.string.retry));
         data.add(map);
-        JobsDetailsAdapter adapter = new JobsDetailsAdapter(JobsDetails.this,
+        EasyJobsAdapter adapter = new EasyJobsAdapter(JobsDetails.this,
                 R.layout.listview_jobs_details_items, data);
         ListView listview_jobs_details =
                 (ListView) findViewById(R.id.listview_jobs_details);
@@ -327,7 +327,7 @@ public class JobsDetails extends EasyJobsBase {
         String params = "";
         ListView listview_jobs_details =
                 (ListView) findViewById(R.id.listview_jobs_details);
-        JobsDetailsAdapter adapter = (JobsDetailsAdapter) listview_jobs_details.getAdapter();
+        EasyJobsAdapter adapter = (EasyJobsAdapter) listview_jobs_details.getAdapter();
         if (adapter != null) {
             for (int i = 0; i < adapter.getCount(); i++) {
                 Object item = adapter.getItem(i);
@@ -376,7 +376,7 @@ public class JobsDetails extends EasyJobsBase {
                 if (value == null || value.length() == 0) value = NOT_DEFINED;
                 ListView listview_jobs_details =
                         (ListView) findViewById(R.id.listview_jobs_details);
-                JobsDetailsAdapter adapter = (JobsDetailsAdapter) listview_jobs_details.getAdapter();
+                EasyJobsAdapter adapter = (EasyJobsAdapter) listview_jobs_details.getAdapter();
                 if (adapter != null) {
                     for (int i = 0; i < adapter.getCount(); i++) {
                         if (adapter.getItem(i) != null) {

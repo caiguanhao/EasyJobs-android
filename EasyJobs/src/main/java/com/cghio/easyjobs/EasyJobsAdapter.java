@@ -11,14 +11,16 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Map;
 
-public class JobsDetailsAdapter extends ArrayAdapter<Map<String, Object>> {
+public class EasyJobsAdapter extends ArrayAdapter<Map<String, Object>> {
 
     private List<Map<String, Object>> items;
+    private int resource;
     private int initialTextColor = -1;
     private int initialBackgroundColor = -1;
 
-    public JobsDetailsAdapter(Context context, int resource, List<Map<String, Object>> objects) {
+    public EasyJobsAdapter(Context context, int resource, List<Map<String, Object>> objects) {
         super(context, resource, objects);
+        this.resource = resource;
         this.items = objects;
     }
 
@@ -26,7 +28,7 @@ public class JobsDetailsAdapter extends ArrayAdapter<Map<String, Object>> {
     public View getView(int position, View view, ViewGroup parent) {
         if (view == null) {
             LayoutInflater li = LayoutInflater.from(getContext());
-            view = li.inflate(R.layout.listview_jobs_details_items, null);
+            view = li.inflate(resource, null);
         }
         Map<String, Object> item = this.items.get(position);
         if (item != null && view != null) {
@@ -59,16 +61,19 @@ public class JobsDetailsAdapter extends ArrayAdapter<Map<String, Object>> {
                     value.setVisibility(View.GONE);
 
                     if (key != null) {
+                        key.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
                         key.setPadding(padding, padding, padding, padding);
                         key.setTextColor(getContext().getResources().getColor(android.R.color.background_light));
                         key.setBackgroundColor(getContext().getResources().getColor(android.R.color.background_dark));
                     }
                 } else {
                     value.setText(text);
-                    if (text.length() > 30) {
-                        value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
-                    } else {
-                        value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                    if (resource == R.layout.listview_jobs_details_items) {
+                        if (text.length() > 30) {
+                            value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 10);
+                        } else {
+                            value.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+                        }
                     }
                 }
             }

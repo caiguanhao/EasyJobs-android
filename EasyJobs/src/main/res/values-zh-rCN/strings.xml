@@ -46,6 +46,7 @@
 
     <string name="loading">载入中...</string>
 
+    <string name="actions">动作</string>
     <string name="reload">重新载入</string>
     <string name="cancel">取消</string>
     <string name="ok">OK</string>

@@ -246,10 +246,16 @@ public class Jobs extends EasyJobsBase {
             for (int i = 0; i < jobs.length(); i++) {
                 Map<String, Object> map = new HashMap<String, Object>();
                 map.put("ID", jobs.getJSONObject(i).getInt("id"));
-                map.put("NAME", jobs.getJSONObject(i).getString("name"));
+                map.put("KEY", jobs.getJSONObject(i).getString("name"));
                 String server = jobs.getJSONObject(i).getString("server_name");
                 if (server.equals("null")) server = getString(R.string.no_server);
-                map.put("SERVER_NAME", server);
+                map.put("VALUE", server);
+                data.add(map);
+            }
+
+            {
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("KEY", getString(R.string.actions));
                 data.add(map);
             }
 
@@ -258,14 +264,13 @@ public class Jobs extends EasyJobsBase {
 
             for (int i = 0; i < other_buttons_text.length; i++) {
                 Map<String, Object> map = new HashMap<String, Object>();
-                map.put("NAME", getString(other_buttons_text[i]));
-                map.put("SERVER_NAME", getString(other_buttons_desc[i]));
+                map.put("KEY", getString(other_buttons_text[i]));
+                map.put("VALUE", getString(other_buttons_desc[i]));
                 data.add(map);
             }
 
-            SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
-                    R.layout.listview_jobs_items, new String[]{"NAME", "SERVER_NAME"},
-                    new int[]{R.id.text_job_name, R.id.text_server_name});
+            EasyJobsAdapter adapter = new EasyJobsAdapter(Jobs.this, R.layout.listview_jobs_items,
+                    data);
             ListView listview_jobs = (ListView) findViewById(R.id.listView_jobs);
             listview_jobs.setAdapter(adapter);
             listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -281,6 +286,7 @@ public class Jobs extends EasyJobsBase {
                         default:
                             Object item = adapterView.getAdapter().getItem(i);
                             if (item instanceof Map) {
+                                if (!((Map) item).containsKey("ID")) break;
                                 int ID = Integer.parseInt(((Map) item).get("ID").toString());
                                 Intent intent = new Intent(Jobs.this, JobsDetails.class);
                                 intent.putExtra("API_TOKEN", API_TOKEN);
@@ -326,7 +332,7 @@ public class Jobs extends EasyJobsBase {
         data.add(map);
         SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
                 R.layout.listview_jobs_items, new String[]{"K", "V"},
-                new int[]{R.id.text_job_name, R.id.text_server_name});
+                new int[]{R.id.text_key, R.id.text_value});
         ListView listview_jobs = (ListView) findViewById(R.id.listView_jobs);
         listview_jobs.setAdapter(adapter);
         listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -360,7 +366,7 @@ public class Jobs extends EasyJobsBase {
         data.add(map);
         SimpleAdapter adapter = new SimpleAdapter(Jobs.this, data,
                 R.layout.listview_jobs_items, new String[]{"K", "V"},
-                new int[]{R.id.text_job_name, R.id.text_server_name});
+                new int[]{R.id.text_key, R.id.text_value});
         ListView listview_jobs = (ListView) findViewById(R.id.listView_jobs);
         listview_jobs.setAdapter(adapter);
         listview_jobs.setOnItemClickListener(new AdapterView.OnItemClickListener() {
