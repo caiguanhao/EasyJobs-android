@@ -17,6 +17,7 @@ public class EasyJobsAdapter extends ArrayAdapter<Map<String, Object>> {
     private int resource;
     private int initialTextColor = -1;
     private int initialBackgroundColor = -1;
+    private float initialTextSize = -1;
 
     public EasyJobsAdapter(Context context, int resource, List<Map<String, Object>> objects) {
         super(context, resource, objects);
@@ -43,12 +44,14 @@ public class EasyJobsAdapter extends ArrayAdapter<Map<String, Object>> {
                 if (key != null) {
                     key.setText(item.get("KEY").toString());
                     key.setPadding(padding, padding, padding, 0);
-                    if (initialTextColor == -1 || initialBackgroundColor == -1) {
+                    if (initialTextColor == -1 || initialBackgroundColor == -1 || initialTextSize == -1) {
                         initialTextColor = key.getCurrentTextColor();
                         initialBackgroundColor = key.getDrawingCacheBackgroundColor();
+                        initialTextSize = key.getTextSize();
                     } else {
                         key.setTextColor(initialTextColor);
                         key.setBackgroundColor(initialBackgroundColor);
+                        key.setTextSize(TypedValue.COMPLEX_UNIT_PX, initialTextSize);
                     }
                 }
 

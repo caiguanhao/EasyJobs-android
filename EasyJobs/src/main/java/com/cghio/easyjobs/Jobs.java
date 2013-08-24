@@ -29,6 +29,8 @@ import org.json.JSONObject;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -244,13 +246,39 @@ public class Jobs extends EasyJobsBase {
 
             JSONArray jobs = new JSONArray(content);
             for (int i = 0; i < jobs.length(); i++) {
+                JSONObject object = jobs.getJSONObject(i);
                 Map<String, Object> map = new HashMap<String, Object>();
-                map.put("ID", jobs.getJSONObject(i).getInt("id"));
-                map.put("KEY", jobs.getJSONObject(i).getString("name"));
-                String server = jobs.getJSONObject(i).getString("server_name");
+                map.put("ID", object.getInt("id"));
+                map.put("KEY", object.getString("name"));
+                String server = object.getString("server_name");
                 if (server.equals("null")) server = getString(R.string.no_server);
                 map.put("VALUE", server);
+                int type_id = 0;
+                if (!object.isNull("type_id")) type_id = object.getInt("type_id");
+                map.put("TYPE_ID", type_id);
+                String type_name = object.getString("type_name");
+                if (type_name.equals("null")) type_name = getString(R.string.orphans);
+                map.put("TYPE_NAME", type_name);
                 data.add(map);
+            }
+
+            Collections.sort(data, new Comparator<Map<String, Object>>() {
+                @Override
+                public int compare(Map<String, Object> obj1, Map<String, Object> obj2) {
+                    return Integer.parseInt(obj1.get("TYPE_ID").toString()) -
+                            Integer.parseInt(obj2.get("TYPE_ID").toString());
+                }
+            });
+
+            String last_type_name = null;
+            for (int i = 0; i < data.size(); i++) {
+                Map<String, Object> object = data.get(i);
+                String type_name = object.get("TYPE_NAME").toString();
+                if (type_name.equals(last_type_name)) continue;
+                Map<String, Object> map = new HashMap<String, Object>();
+                map.put("KEY", type_name);
+                data.add(i, map);
+                last_type_name = type_name;
             }
 
             {
