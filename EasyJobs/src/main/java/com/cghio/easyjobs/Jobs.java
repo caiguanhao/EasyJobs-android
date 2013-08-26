@@ -333,8 +333,8 @@ public class Jobs extends EasyJobsBase {
                 public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
                     Object item = adapterView.getAdapter().getItem(i);
                     if (item instanceof Map) {
-                        if (((Map) item).containsKey("NAME")) {
-                            copyText(((Map) item).get("NAME").toString());
+                        if (((Map) item).containsKey("KEY")) {
+                            copyText(((Map) item).get("KEY").toString());
                             Toast.makeText(Jobs.this, R.string.string_copied, Toast.LENGTH_SHORT).show();
                             return true;
                         }
