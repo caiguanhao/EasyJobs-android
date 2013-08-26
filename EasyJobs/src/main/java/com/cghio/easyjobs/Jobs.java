@@ -509,6 +509,7 @@ public class Jobs extends EasyJobsBase {
                         Intent intent = new Intent(Intent.ACTION_VIEW,
                                 Uri.parse(TOKEN_LOGIN_URL.replace(":token", API_TOKEN)));
                         startActivity(intent);
+                        revokeAccessWithoutSendingRevokeAccessRequest();
                     }
                 }).setNegativeButton(R.string.no, null).show();
     }
@@ -524,13 +525,17 @@ public class Jobs extends EasyJobsBase {
                 }).setNegativeButton(R.string.no, null).show();
     }
 
-    private void revokeAccessOnly() {
+    private void removeAccessCredentialsOnly() {
         SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.clear();
         editor.commit();
 
         clearEtags();
+    }
+
+    private void revokeAccessOnly() {
+        removeAccessCredentialsOnly();
 
         AsyncHttpClient client = new AsyncHttpClient();
         client.delete(REVOKE_TOKEN_URL + "?token=" + API_TOKEN, new AsyncHttpResponseHandler() {
@@ -538,6 +543,13 @@ public class Jobs extends EasyJobsBase {
             public void onSuccess(String response) {
             }
         });
+    }
+
+    private void revokeAccessWithoutSendingRevokeAccessRequest() {
+        removeAccessCredentialsOnly();
+        setAllVariablesToEmpty();
+        updateTitle();
+        startEasyJobs();
     }
 
     private void revokeAccess() {
