@@ -26,6 +26,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -38,9 +39,9 @@ import java.util.Map;
 public class Jobs extends EasyJobsBase {
 
     private static String PREF_FILE = "auth_info";
-    private static String PREF_VERSION = "VERSION";
-    private static String PREF_URL = "URL";
-    private static String PREF_CONTENT = "CONTENT";
+    private static String PREF_V = "v";
+    private static String PREF_U = "u";
+    private static String PREF_C = "c";
 
     private static String API_HELP_URL = "";
     private static String API_TOKEN = "";
@@ -114,15 +115,36 @@ public class Jobs extends EasyJobsBase {
 
     private boolean readPrefs() {
         SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
-        int VERSION = sharedPrefs.getInt(PREF_VERSION, 0);
-        String URL = sharedPrefs.getString(PREF_URL, "");
-        String CONTENT = sharedPrefs.getString(PREF_CONTENT, "");
+        int VERSION = 0;
+        String URL = "";
+        String CONTENT = "";
+
+        Map<String,?> keys = sharedPrefs.getAll();
+        if (keys == null) return false;
+        for (Map.Entry<String,?> entry : keys.entrySet()) {
+            if (entry.getKey().length() > 10) {
+                try {
+                    String value = new String(Base64.decode(
+                            (String) entry.getValue(), Base64.NO_WRAP), "UTF-8");
+                    JSONObject object = new JSONObject(value);
+                    VERSION = object.getInt(PREF_V);
+                    URL = object.getString(PREF_U);
+                    CONTENT = object.getString(PREF_C);
+                } catch (JSONException e) {
+                    break;
+                } catch (UnsupportedEncodingException e) {
+                    break;
+                }
+                break;
+            }
+        }
 
         // validate version number
         if (VERSION <= 0) return false;
         if (VERSION > MAX_API_VERSION) return false;
 
         // validate help URL
+        if (URL.length() == 0) return false;
         try {
             java.net.URL url = new URL(URL);
             url.toURI();
@@ -463,9 +485,9 @@ public class Jobs extends EasyJobsBase {
         if (decoded_content != null) {
             try {
                 JSONObject object = new JSONObject(decoded_content);
-                int VERSION = object.getInt("v");
-                String URL = object.getString("u");
-                String CONTENT = object.getString("c");
+                int VERSION = object.getInt(PREF_V);
+                String URL = object.getString(PREF_U);
+                String CONTENT = object.getString(PREF_C);
 
                 // validate version number
 
@@ -482,9 +504,8 @@ public class Jobs extends EasyJobsBase {
 
                 SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
                 SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putInt(PREF_VERSION, VERSION);
-                editor.putString(PREF_URL, URL);
-                editor.putString(PREF_CONTENT, CONTENT);
+                editor.putString(Base64.encodeToString(URL.getBytes(), Base64.NO_WRAP).toLowerCase(),
+                        Base64.encodeToString(object.toString().getBytes(), Base64.NO_WRAP));
                 editor.commit();
 
             } catch (MalformedURLException e) {
