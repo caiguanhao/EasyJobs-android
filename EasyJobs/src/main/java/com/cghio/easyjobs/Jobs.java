@@ -2,17 +2,20 @@ package com.cghio.easyjobs;
 
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
@@ -593,15 +596,27 @@ public class Jobs extends EasyJobsBase {
     }
 
     private void updateTitle() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null) return;
         if (API_HELP_URL.length() > 0) {
             Uri uri = Uri.parse(API_HELP_URL);
             String host = uri.getHost();
             if (uri.getPort() > 0 && uri.getPort() != 80) {
                 host += ":" + uri.getPort();
             }
-            setTitle(getString(R.string.app_name) + " - " + host);
+
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            String[] dropdownvalues = new String[]{ host };
+            Context context = actionBar.getThemedContext();
+            if (context == null) return;
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
+                    R.layout.actionbar_spinner, android.R.id.text1, dropdownvalues);
+            adapter.setDropDownViewResource(R.layout.actionbar_spinner_dropdown_item);
+            actionBar.setListNavigationCallbacks(adapter, null);
         } else {
-            setTitle(getString(R.string.app_name));
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+            actionBar.setDisplayShowTitleEnabled(true);
         }
     }
 

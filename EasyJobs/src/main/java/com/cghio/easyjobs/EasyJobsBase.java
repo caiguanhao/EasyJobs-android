@@ -1,7 +1,6 @@
 package com.cghio.easyjobs;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -13,12 +12,13 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Base64;
 import android.view.MenuItem;
 
 import org.apache.http.Header;
 
-public class EasyJobsBase extends Activity {
+public class EasyJobsBase extends ActionBarActivity {
 
     protected int TIMEOUT = 5000;
     protected int MAX_API_VERSION = 1;
