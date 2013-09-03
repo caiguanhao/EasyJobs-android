@@ -67,19 +67,12 @@ public class Jobs extends EasyJobsBase {
     private static List<API> APIs = new ArrayList<API>();
     private static int API_Index = 0;
 
-    private static boolean launched = false;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jobs);
 
-        startEasyJobs(getLastSelectedAPI());
-
-        if (!launched) { // first time launch from link
-            onNewIntent(getIntent());
-        }
-        launched = true;
+        onNewIntent(getIntent());
     }
 
     @Override
@@ -95,6 +88,8 @@ public class Jobs extends EasyJobsBase {
 
         if (fromURI != null) {
             decode(fromURI.substring(2));
+        } else {
+            startEasyJobs(getLastSelectedAPI());
         }
     }
 
