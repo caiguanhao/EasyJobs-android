@@ -40,28 +40,26 @@ import java.util.Map;
 
 public class Jobs extends EasyJobsBase {
 
-    private static String PREF_FILE = "auth_info";
-
-    private static String PREF_SELECTED = "selected";
-
-    private static String PREF_V = "v";
-    private static String PREF_U = "u";
-    private static String PREF_C = "c";
+    private static final String PREF_FILE = "auth_info";
+    private static final String PREF_SELECTED = "selected";
+    private static final String PREF_V = "v";
+    private static final String PREF_U = "u";
+    private static final String PREF_C = "c";
 
     private class API {
-        public String shared_preference_key = "";
+        protected String shared_preference_key = "";
 
-        public String host = "";
-        public String help_url = "";
-        public String token = "";
+        protected String host = "";
+        protected String help_url = "";
+        protected String token = "";
 
-        public String jobs_index_url = "";
+        protected String jobs_index_url = "";
 
-        public String jobs_show_url = "";
-        public String jobs_run_url = "";
-        public String jobs_parameters_index_url = "";
-        public String token_login_url = "";
-        public String token_revoke_url = "";
+        protected String jobs_show_url = "";
+        protected String jobs_run_url = "";
+        protected String jobs_parameters_index_url = "";
+        protected String token_login_url = "";
+        protected String token_revoke_url = "";
     }
 
     private static List<API> APIs = new ArrayList<API>();

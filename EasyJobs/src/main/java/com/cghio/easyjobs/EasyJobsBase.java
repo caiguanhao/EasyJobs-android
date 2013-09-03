@@ -20,16 +20,16 @@ import org.apache.http.Header;
 
 public class EasyJobsBase extends ActionBarActivity {
 
-    protected int TIMEOUT = 5000;
-    protected int MAX_API_VERSION = 1;
-    protected static String IF_NONE_MATCH = "If-None-Match";
-    protected static String ETAG = "ETag";
+    protected final int TIMEOUT = 5000;
+    protected final int MAX_API_VERSION = 1;
+    protected static final String IF_NONE_MATCH = "If-None-Match";
+    protected static final String ETAG = "ETag";
 
     private ProgressDialog dialog;
     private Handler dialogHandler;
 
-    private static String ETAG_FILE = "etags";
-    private static String NOT_MODIFIED = "Not Modified";
+    private static final String ETAG_FILE = "etags";
+    private static final String NOT_MODIFIED = "Not Modified";
 
     @Override
     public void onStop() {
