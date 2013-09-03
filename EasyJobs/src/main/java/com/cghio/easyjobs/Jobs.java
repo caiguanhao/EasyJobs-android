@@ -29,7 +29,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -46,17 +45,24 @@ public class Jobs extends EasyJobsBase {
     private static String PREF_U = "u";
     private static String PREF_C = "c";
 
-    private static String API_HELP_URL = "";
-    private static String API_TOKEN = "";
+    private class API {
+        public String shared_preference_key = "";
 
-    private static String JOBS_INDEX_VERB = "";
-    private static String JOBS_INDEX_URL = "";
+        public String host = "";
+        public String help_url = "";
+        public String token = "";
 
-    private static String JOBS_SHOW_URL = "";
-    private static String JOBS_RUN_URL = "";
-    private static String JOBS_PARAMETERS_INDEX_URL = "";
-    private static String TOKEN_LOGIN_URL = "";
-    private static String REVOKE_TOKEN_URL = "";
+        public String jobs_index_url = "";
+
+        public String jobs_show_url = "";
+        public String jobs_run_url = "";
+        public String jobs_parameters_index_url = "";
+        public String token_login_url = "";
+        public String token_revoke_url = "";
+    }
+
+    private static List<API> APIs = new ArrayList<API>();
+    private static int API_Index = 0;
 
     private static boolean launched = false;
 
@@ -100,7 +106,8 @@ public class Jobs extends EasyJobsBase {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.reload:
-                removeEtagContent(JOBS_INDEX_URL);
+                API api = APIs.get(API_Index);
+                removeEtagContent(api.jobs_index_url);
                 startEasyJobs();
                 return true;
             default:
@@ -109,68 +116,101 @@ public class Jobs extends EasyJobsBase {
     }
 
     private void startEasyJobs() {
-        if (readPrefs()) {
-            getHelp();
-        } else {
-            showScanButton();
-        }
-    }
-
-    private boolean readPrefs() {
         SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
-        int VERSION = 0;
-        String URL = "";
-        String CONTENT = "";
 
+        clearAPIs();
         Map<String,?> keys = sharedPrefs.getAll();
-        if (keys == null) return false;
+        if (keys == null) return;
         for (Map.Entry<String,?> entry : keys.entrySet()) {
             if (entry.getKey().length() > 10) {
                 try {
                     String value = new String(Base64.decode(
                             (String) entry.getValue(), Base64.NO_WRAP), "UTF-8");
                     JSONObject object = new JSONObject(value);
-                    VERSION = object.getInt(PREF_V);
-                    URL = object.getString(PREF_U);
-                    CONTENT = object.getString(PREF_C);
-                } catch (JSONException e) {
-                    break;
-                } catch (UnsupportedEncodingException e) {
+                    int VERSION = object.getInt(PREF_V);
+                    String URL = object.getString(PREF_U);
+                    String CONTENT = object.getString(PREF_C);
+
+                    // validate version number
+                    if (VERSION <= 0) break;
+                    if (VERSION > MAX_API_VERSION) break;
+
+                    // validate help URL
+                    if (URL.length() == 0) break;
+                    try {
+                        java.net.URL url = new URL(URL);
+                        url.toURI();
+                    } catch (Exception e) {
+                        break;
+                    }
+
+                    if (CONTENT.length() == 0) break;
+
+                    Uri uri = Uri.parse(URL);
+                    String host = uri.getHost();
+                    if (uri.getPort() > 0 && uri.getPort() != 80) {
+                        host += ":" + uri.getPort();
+                    }
+
+                    API api = new API();
+                    api.shared_preference_key = entry.getKey();
+                    api.host = host;
+                    api.help_url = URL;
+                    api.token = CONTENT;
+                    APIs.add(api);
+                } catch (Exception e) {
                     break;
                 }
-                break;
             }
         }
 
-        // validate version number
-        if (VERSION <= 0) return false;
-        if (VERSION > MAX_API_VERSION) return false;
-
-        // validate help URL
-        if (URL.length() == 0) return false;
-        try {
-            java.net.URL url = new URL(URL);
-            url.toURI();
-        } catch (Exception e) {
-            return false;
+        final ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null) return;
+        if (APIs.size() > 0) {
+            actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+            ArrayList<String> dropdownvalues = new ArrayList<String>();
+            for (API api : APIs) {
+                dropdownvalues.add(api.host);
+            }
+            API_Index = APIs.size() - 1;
+            dropdownvalues.add(getString(R.string.scan));
+            Context context = actionBar.getThemedContext();
+            if (context == null) return;
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
+                    R.layout.actionbar_spinner, android.R.id.text1, dropdownvalues);
+            adapter.setDropDownViewResource(R.layout.actionbar_spinner_dropdown_item);
+            actionBar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
+                @Override
+                public boolean onNavigationItemSelected(int i, long l) {
+                    if (i == APIs.size()) {
+                        actionBar.setSelectedNavigationItem(API_Index);
+                        openScanner();
+                    } else {
+                        API_Index = i;
+                        getHelp();
+                    }
+                    return true;
+                }
+            });
+            actionBar.setSelectedNavigationItem(API_Index);
+        } else {
+            actionBar.setDisplayShowTitleEnabled(true);
+            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+            setTitle(R.string.app_name);
+            showScanButton();
         }
-
-        if (CONTENT.length() == 0) return false;
-
-        API_HELP_URL = URL;
-        API_TOKEN = CONTENT;
-
-        return true;
     }
 
     private void getHelp() {
-        if (API_TOKEN.length() == 0) return;
+        final API api = APIs.get(API_Index);
+        if (api.token.length() == 0) return;
         RequestParams params = new RequestParams();
-        params.put("token", API_TOKEN);
+        params.put("token", api.token);
         AsyncHttpClient client = new AsyncHttpClient();
         client.setTimeout(TIMEOUT);
         showLoading();
-        client.get(API_HELP_URL, params, new AsyncHttpResponseHandler() {
+        client.get(api.help_url, params, new AsyncHttpResponseHandler() {
             @Override
             public void onFailure(Throwable e, String response) {
                 hideLoading();
@@ -190,31 +230,30 @@ public class Jobs extends EasyJobsBase {
             }
             @Override
             public void onSuccess(String response) {
-                updateTitle();
                 hideLoading();
                 try {
                     JSONObject helpObj = new JSONObject(response);
                     JSONObject jobsObj = helpObj.getJSONObject("jobs");
                     JSONObject jobsIndexObj = jobsObj.getJSONObject("index");
-                    JOBS_INDEX_VERB = jobsIndexObj.getString("verb");
-                    JOBS_INDEX_URL = jobsIndexObj.getString("url");
+
+                    api.jobs_index_url = jobsIndexObj.getString("url");
 
                     JSONObject jobsShowObj = jobsObj.getJSONObject("show");
-                    JOBS_SHOW_URL = jobsShowObj.getString("url");
+                    api.jobs_show_url = jobsShowObj.getString("url");
 
                     JSONObject jobsRunObj = jobsObj.getJSONObject("run");
-                    JOBS_RUN_URL = jobsRunObj.getString("url");
+                    api.jobs_run_url = jobsRunObj.getString("url");
 
                     JSONObject jobsParamsObj = helpObj.getJSONObject("job_parameters");
                     JSONObject jobsParamsIndexObj = jobsParamsObj.getJSONObject("index");
-                    JOBS_PARAMETERS_INDEX_URL = jobsParamsIndexObj.getString("url");
+                    api.jobs_parameters_index_url = jobsParamsIndexObj.getString("url");
 
                     JSONObject tokensObj = helpObj.getJSONObject("tokens");
                     JSONObject tokensRevokeObj = tokensObj.getJSONObject("revoke");
-                    REVOKE_TOKEN_URL = tokensRevokeObj.getString("url");
+                    api.token_revoke_url = tokensRevokeObj.getString("url");
 
                     JSONObject tokensLoginObj = tokensObj.getJSONObject("login");
-                    TOKEN_LOGIN_URL = tokensLoginObj.getString("url");
+                    api.token_login_url = tokensLoginObj.getString("url");
 
                     getJobs();
                 } catch (JSONException e) {
@@ -226,22 +265,23 @@ public class Jobs extends EasyJobsBase {
     }
 
     private void getJobs() {
-        if (JOBS_INDEX_VERB.length() == 0 || JOBS_INDEX_URL.length() == 0) return;
+        final API api = APIs.get(API_Index);
+        if (api.jobs_index_url.length() == 0) return;
 
-        String cachedContent = getEtagContent(JOBS_INDEX_URL);
+        String cachedContent = getEtagContent(api.jobs_index_url);
         if (cachedContent.length() > 0) {
             parseContent(cachedContent);
         }
 
         AsyncHttpClient client = new AsyncHttpClient();
         RequestParams params = new RequestParams();
-        params.put("token", API_TOKEN);
+        params.put("token", api.token);
         client.setTimeout(TIMEOUT);
         showLoading();
 
-        client.addHeader(IF_NONE_MATCH, getEtag(JOBS_INDEX_URL));
+        client.addHeader(IF_NONE_MATCH, getEtag(api.jobs_index_url));
 
-        client.get(JOBS_INDEX_URL, params, new AsyncHttpResponseHandler() {
+        client.get(api.jobs_index_url, params, new AsyncHttpResponseHandler() {
             @Override
             public void onFailure(Throwable e, String response) {
                 hideLoading();
@@ -259,7 +299,7 @@ public class Jobs extends EasyJobsBase {
             public void onSuccess(int statusCode, Header[] headers, String content) {
                 hideLoading();
                 String etag = getHeader(headers, ETAG);
-                saveETagAndContent(JOBS_INDEX_URL, etag, content);
+                saveETagAndContent(api.jobs_index_url, etag, content);
                 parseContent(content);
             }
         });
@@ -337,17 +377,18 @@ public class Jobs extends EasyJobsBase {
                             toBrowseWebPage();
                             break;
                         default:
+                            API api = APIs.get(API_Index);
                             Object item = adapterView.getAdapter().getItem(i);
                             if (item instanceof Map) {
                                 if (!((Map) item).containsKey("ID")) break;
                                 int ID = Integer.parseInt(((Map) item).get("ID").toString());
                                 Intent intent = new Intent(Jobs.this, JobsDetails.class);
-                                intent.putExtra("API_TOKEN", API_TOKEN);
+                                intent.putExtra("API_TOKEN", api.token);
                                 intent.putExtra("JOB_ID", ID);
-                                intent.putExtra("JOBS_SHOW_URL", JOBS_SHOW_URL);
-                                intent.putExtra("JOBS_RUN_URL", JOBS_RUN_URL);
+                                intent.putExtra("JOBS_SHOW_URL", api.jobs_show_url);
+                                intent.putExtra("JOBS_RUN_URL", api.jobs_run_url);
                                 intent.putExtra("JOBS_PARAMETERS_INDEX_URL",
-                                        JOBS_PARAMETERS_INDEX_URL);
+                                        api.jobs_parameters_index_url);
                                 Jobs.this.startActivity(intent);
                             }
                     }
@@ -518,9 +559,7 @@ public class Jobs extends EasyJobsBase {
             } catch (Exception e) {
                 showSimpleErrorDialog(e.getMessage());
             }
-            if (readPrefs()) {
-                startEasyJobs();
-            }
+            startEasyJobs();
         }
     }
 
@@ -530,8 +569,9 @@ public class Jobs extends EasyJobsBase {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+                        API api = APIs.get(API_Index);
                         Intent intent = new Intent(Intent.ACTION_VIEW,
-                                Uri.parse(TOKEN_LOGIN_URL.replace(":token", API_TOKEN)));
+                                Uri.parse(api.token_login_url.replace(":token", api.token)));
                         startActivity(intent);
                         revokeAccessWithoutSendingRevokeAccessRequest();
                     }
@@ -550,9 +590,10 @@ public class Jobs extends EasyJobsBase {
     }
 
     private void removeAccessCredentialsOnly() {
+        API api = APIs.get(API_Index);
         SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.clear();
+        editor.remove(api.shared_preference_key);
         editor.commit();
 
         clearEtags();
@@ -561,8 +602,9 @@ public class Jobs extends EasyJobsBase {
     private void revokeAccessOnly() {
         removeAccessCredentialsOnly();
 
+        API api = APIs.get(API_Index);
         AsyncHttpClient client = new AsyncHttpClient();
-        client.delete(REVOKE_TOKEN_URL + "?token=" + API_TOKEN, new AsyncHttpResponseHandler() {
+        client.delete(api.token_revoke_url + "?token=" + api.token, new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(String response) {
             }
@@ -571,53 +613,19 @@ public class Jobs extends EasyJobsBase {
 
     private void revokeAccessWithoutSendingRevokeAccessRequest() {
         removeAccessCredentialsOnly();
-        setAllVariablesToEmpty();
-        updateTitle();
+        clearAPIs();
         startEasyJobs();
     }
 
     private void revokeAccess() {
         revokeAccessOnly();
-        setAllVariablesToEmpty();
-        updateTitle();
+        clearAPIs();
         startEasyJobs();
     }
 
-    private void setAllVariablesToEmpty() {
-        API_HELP_URL = "";
-        API_TOKEN = "";
-        JOBS_INDEX_VERB = "";
-        JOBS_INDEX_URL = "";
-        JOBS_SHOW_URL = "";
-        JOBS_RUN_URL = "";
-        JOBS_PARAMETERS_INDEX_URL = "";
-        REVOKE_TOKEN_URL = "";
-        TOKEN_LOGIN_URL = "";
-    }
-
-    private void updateTitle() {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar == null) return;
-        if (API_HELP_URL.length() > 0) {
-            Uri uri = Uri.parse(API_HELP_URL);
-            String host = uri.getHost();
-            if (uri.getPort() > 0 && uri.getPort() != 80) {
-                host += ":" + uri.getPort();
-            }
-
-            actionBar.setDisplayShowTitleEnabled(false);
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-            String[] dropdownvalues = new String[]{ host };
-            Context context = actionBar.getThemedContext();
-            if (context == null) return;
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-                    R.layout.actionbar_spinner, android.R.id.text1, dropdownvalues);
-            adapter.setDropDownViewResource(R.layout.actionbar_spinner_dropdown_item);
-            actionBar.setListNavigationCallbacks(adapter, null);
-        } else {
-            actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-            actionBar.setDisplayShowTitleEnabled(true);
-        }
+    private void clearAPIs() {
+        APIs.clear();
+        API_Index = 0;
     }
 
 }
