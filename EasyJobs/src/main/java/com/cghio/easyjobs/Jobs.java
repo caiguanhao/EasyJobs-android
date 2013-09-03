@@ -71,7 +71,7 @@ public class Jobs extends EasyJobsBase {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jobs);
 
-        startEasyJobs();
+        startEasyJobs(null);
 
         if (!launched) { // first time launch from link
             onNewIntent(getIntent());
@@ -108,14 +108,14 @@ public class Jobs extends EasyJobsBase {
             case R.id.reload:
                 API api = APIs.get(API_Index);
                 removeEtagContent(api.jobs_index_url);
-                startEasyJobs();
+                startEasyJobs(null);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void startEasyJobs() {
+    private void startEasyJobs(String useAPIWithThisURL) {
         SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
 
         clearAPIs();
@@ -173,7 +173,7 @@ public class Jobs extends EasyJobsBase {
             for (API api : APIs) {
                 dropdownvalues.add(api.host);
             }
-            API_Index = APIs.size() - 1;
+            API_Index = indexOfAPIs(useAPIWithThisURL);
             dropdownvalues.add(getString(R.string.scan));
             Context context = actionBar.getThemedContext();
             if (context == null) return;
@@ -468,7 +468,7 @@ public class Jobs extends EasyJobsBase {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 switch (i) {
                     case 0:
-                        startEasyJobs();
+                        startEasyJobs(null);
                         break;
                     case 1:
                         openScanner();
@@ -552,6 +552,7 @@ public class Jobs extends EasyJobsBase {
                         Base64.encodeToString(object.toString().getBytes(), Base64.NO_WRAP));
                 editor.commit();
 
+                startEasyJobs(URL);
             } catch (MalformedURLException e) {
                 showSimpleErrorDialog(getString(R.string.error_invalid_url));
             } catch (JSONException e) {
@@ -559,7 +560,6 @@ public class Jobs extends EasyJobsBase {
             } catch (Exception e) {
                 showSimpleErrorDialog(e.getMessage());
             }
-            startEasyJobs();
         }
     }
 
@@ -614,13 +614,23 @@ public class Jobs extends EasyJobsBase {
     private void revokeAccessWithoutSendingRevokeAccessRequest() {
         removeAccessCredentialsOnly();
         clearAPIs();
-        startEasyJobs();
+        startEasyJobs(null);
     }
 
     private void revokeAccess() {
         revokeAccessOnly();
         clearAPIs();
-        startEasyJobs();
+        startEasyJobs(null);
+    }
+
+    private int indexOfAPIs(String URL) {
+        if (URL == null || URL.equals("null")) return 0;
+        for (int i = 0; i < APIs.size(); i++) {
+            if (APIs.get(i).help_url.equals(URL)) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     private void clearAPIs() {
