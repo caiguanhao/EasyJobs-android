@@ -41,6 +41,9 @@ import java.util.Map;
 public class Jobs extends EasyJobsBase {
 
     private static String PREF_FILE = "auth_info";
+
+    private static String PREF_SELECTED = "selected";
+
     private static String PREF_V = "v";
     private static String PREF_U = "u";
     private static String PREF_C = "c";
@@ -71,7 +74,7 @@ public class Jobs extends EasyJobsBase {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_jobs);
 
-        startEasyJobs(null);
+        startEasyJobs(getLastSelectedAPI());
 
         if (!launched) { // first time launch from link
             onNewIntent(getIntent());
@@ -262,6 +265,7 @@ public class Jobs extends EasyJobsBase {
                 }
             }
         });
+        saveLastSelectedAPI(api.help_url);
     }
 
     private void getJobs() {
@@ -638,4 +642,18 @@ public class Jobs extends EasyJobsBase {
         API_Index = 0;
     }
 
+    private void saveLastSelectedAPI(String URL) {
+        SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putString(PREF_SELECTED, Base64.encodeToString(URL.getBytes(), Base64.NO_WRAP));
+        editor.commit();
+    }
+    private String getLastSelectedAPI() {
+        SharedPreferences sharedPrefs = getSharedPreferences(PREF_FILE, 0);
+        String content = sharedPrefs.getString(PREF_SELECTED, "");
+        if (content.length() > 0) {
+            content = new String(Base64.decode(content, Base64.NO_WRAP));
+        }
+        return content;
+    }
 }
